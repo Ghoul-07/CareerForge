@@ -1,8 +1,15 @@
-.nav-container{
+/* .nav-container{
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 15px;
+} */
+
+.nav-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;   /* 👈 use gap instead of margin */
 }
 
 .nav-link{
@@ -11,6 +18,11 @@
   margin : 10px 10px;
   color: white;
 }
+
+/* .nav-link{
+  padding: 8px 12px;
+  color: white;
+} */
 
 .logout-button{
   cursor: pointer;

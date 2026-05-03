@@ -35,52 +35,49 @@ function Onboarding() {
     }
   }
   return (
-    <div className="bg-gray-100 min-h-screen">
-      {/* MAIN CONTENT */}
-      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center">
-        <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-          <h1 className="text-2xl font-bold text-center mb-6">
-            Connect your Profiles
-          </h1>
+    <div className="min-h-screen bg-[#020817] flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-[#0f172a] border border-[#1e293b] rounded-2xl p-8 shadow-lg shadow-indigo-500/10">
+        <h1
+          className="text-2xl font-bold text-white mb-6 text-center"
+          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        >
+          Connect your Profiles
+        </h1>
 
-          {error && (
-            <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
-          )}
+        {error && (
+          <p className="text-red-400 text-sm text-center mb-4">{error}</p>
+        )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <input
-              type="text"
-              placeholder="Enter Github username"
-              name="githubUsername"
-              value={form.githubUsername}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg 
-              focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <input
+            type="text"
+            placeholder="Enter Github username"
+            name="githubUsername"
+            value={form.githubUsername}
+            onChange={handleChange}
+            className="bg-[#020817] border border-[#1e293b] text-white rounded-lg px-4 py-3 outline-none focus:border-indigo-500 transition-all placeholder:text-slate-500"
+          />
 
-            <input
-              type="text"
-              placeholder="Enter Leetcode username"
-              name="leetcodeUsername"
-              value={form.leetcodeUsername}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg 
-              focus:outline-none focus:ring-2 focus:ring-yellow-500"
-            />
+          <input
+            type="text"
+            placeholder="Enter Leetcode username"
+            name="leetcodeUsername"
+            value={form.leetcodeUsername}
+            onChange={handleChange}
+            className="bg-[#020817] border border-[#1e293b] text-white rounded-lg px-4 py-3 outline-none focus:border-indigo-500 transition-all placeholder:text-slate-500"
+          />
 
-            <button
-              disabled={loading}
-              className={`w-full py-2 rounded-lg text-white font-semibold transition
-              ${
-                loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
-            >
-              {loading ? "Saving..." : "Continue"}
-            </button>
-          </form>
-        </div>
+          <button
+            disabled={loading}
+            className="mt-2 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-all"
+          >
+            {loading ? "Saving..." : "Continue"}
+          </button>
+        </form>
+
+        <p className="text-sm text-slate-400 text-center mt-6">
+          You can update these later from your dashboard.
+        </p>
       </div>
     </div>
   );
