@@ -4,11 +4,15 @@ import { useState } from "react";
 import axios from "axios";
 
 function Onboarding() {
+  const { accessToken, user } = useAuth();
+
   const [form, setForm] = useState({
-    githubUsername: "",
-    leetcodeUsername: "",
+    githubUsername: user?.githubUsername || "",
+    leetcodeUsername: user?.leetcodeUsername || "",
   });
-  const { accessToken } = useAuth();
+
+  const isUpdate = user?.githubUsername || user?.leetcodeUsername;
+
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,7 +45,7 @@ function Onboarding() {
           className="text-2xl font-bold text-white mb-6 text-center"
           style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
         >
-          Connect your Profiles
+          {isUpdate ? "Update your Profiles" : "Connect your Profiles"}
         </h1>
 
         {error && (
@@ -71,12 +75,12 @@ function Onboarding() {
             disabled={loading}
             className="mt-2 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-all"
           >
-            {loading ? "Saving..." : "Continue"}
+            {loading ? "Saving..." : isUpdate ? "Update" : "Continue"}
           </button>
         </form>
 
         <p className="text-sm text-slate-400 text-center mt-6">
-          You can update these later from your dashboard.
+          You can update these later .
         </p>
       </div>
     </div>

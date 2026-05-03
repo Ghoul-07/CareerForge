@@ -167,6 +167,13 @@ export default function Dashboard() {
           </p>
         </div>
 
+        <button
+          onClick={() => navigate("/onboarding")}
+          className="border border-[#1e293b] hover:border-indigo-500 text-slate-400 hover:text-white text-sm px-4 py-2 rounded-lg transition-all mb-6"
+        >
+          ✏️ Edit Profiles
+        </button>
+
         {/* Readiness scores */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           <ReadinessCard

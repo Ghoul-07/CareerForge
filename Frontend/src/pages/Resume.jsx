@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 function Resume() {
   const [resumeFile, setResumeFile] = useState(null);
@@ -9,6 +9,8 @@ function Resume() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { accessToken } = useAuth();
+
+  const fileInputRef = useRef(null);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -82,6 +84,7 @@ function Resume() {
               accept=".pdf"
               className="hidden"
               id="resumeInput"
+              ref={fileInputRef}
               onChange={(e) => setResumeFile(e.target.files[0])}
             />
             <label
@@ -120,6 +123,25 @@ function Resume() {
             <p className="text-slate-400 font-mono text-sm tracking-widest">
               AI IS ANALYZING YOUR RESUME...
             </p>
+          </div>
+        )}
+
+        {analysis && !loading && (
+          <div className="flex flex-col gap-6 mb-4">
+            {/* Analyze again button */}
+            <button
+              onClick={() => {
+                setAnalysis(null);
+                setResumeFile(null);
+                setJobDescription("");
+                if (fileInputRef.current) fileInputRef.current.value = "";
+              }}
+              className="border border-[#1e293b] hover:border-indigo-500 text-slate-400 hover:text-white text-sm px-4 py-2 rounded-lg transition-all w-fit"
+            >
+              ← Analyze Another Resume
+            </button>
+
+            {/* rest of results... */}
           </div>
         )}
 
