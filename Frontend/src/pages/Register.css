@@ -1,0 +1,30 @@
+
+input{
+  width: 100%;
+  border:1px solid black;
+}
+
+.registerContainer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  flex-direction: column;
+  gap:20px;
+}
+.registerForm{
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  width: 400px;
+}
+
+.registerSubmit{
+  width: 100%;
+  border:1px solid black;
+  color:white;
+  background-color: green;
+  border-radius: 6px;
+  padding: 10px 4px;
+  cursor: pointer;
+}

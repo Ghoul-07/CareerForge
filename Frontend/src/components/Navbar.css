@@ -1,0 +1,17 @@
+.nav-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav-link{
+ 
+  padding: 10px;
+  margin : 10px 10px;
+  color: white;
+}
+
+.logout-button{
+  cursor: pointer;
+}
