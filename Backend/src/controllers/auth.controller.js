@@ -56,13 +56,13 @@ export async function postLoginUser(req, res, next){
     }
 
     const user = await userModel.findOne({email})
-
+       
     if(!user){
       return res.status(400).json({message : "Invalid email or password"})
     }
 
     const isValidPass = await bcrypt.compare(password, user.password)
-
+   
     if(!isValidPass){
       return res.status(400).json({message: "Invalid email or password"})
     }

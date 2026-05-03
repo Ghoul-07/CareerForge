@@ -83,6 +83,8 @@ export default function Dashboard() {
   const { accessToken, user } = useAuth();
   const [github, setGithub] = useState(null);
   const [leetcode, setLeetcode] = useState(null);
+  const [resumeAnalysis, setResumeAnalysis] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -105,6 +107,7 @@ export default function Dashboard() {
         );
         setGithub(response.data.github);
         setLeetcode(response.data.leetcode);
+        setResumeAnalysis(response.data.resumeAnalysis);
       } catch (err) {
         setError(err.response?.data?.message || "Something went wrong");
       } finally {
@@ -182,10 +185,19 @@ export default function Dashboard() {
             color="#6366f1"
           />
           <ReadinessCard label="GitHub Score" score={ghScore} color="#10b981" />
-          <ReadinessCard label="Resume Match" score={0} color="#f59e0b" />
+          <ReadinessCard
+            label="Resume Match"
+            score={resumeAnalysis ? resumeAnalysis.atsScore : 0}
+            color="#f59e0b"
+          />
           <ReadinessCard
             label="Overall"
-            score={Math.round((dsaScore + ghScore) / 2)}
+            score={Math.round(
+              (dsaScore +
+                ghScore +
+                (resumeAnalysis ? resumeAnalysis.atsScore : 0)) /
+                3,
+            )}
             color="#ec4899"
           />
         </div>

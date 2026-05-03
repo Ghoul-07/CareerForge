@@ -1,6 +1,7 @@
 import { config } from "../../config/config.js";
 import Groq from 'groq-sdk'
 import pdfParse from 'pdf-parse-fork'
+import resumeAnalysisModel from "../../models/resumeAnalysis.model.js";
 
 const groq = new Groq({apiKey: config.GROQ_API_KEY})
 
@@ -60,6 +61,19 @@ export async function analyzeResume(req, res){
     const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
 
     const analysis = JSON.parse(cleaned)
+
+    await resumeAnalysisModel.findOneAndUpdate(
+      {user: req.user._id},
+      {
+        user: req.user._id,
+        atsScore: analysis.atsScore,
+        missingSkills: analysis.missingSkills,
+        weakPoints: analysis.weakPoints,
+        improvedPoints: analysis.improvedPoints,
+        overallFeedback: analysis.overallFeedback
+      }, 
+      {upsert: true}       // create if not present, update if already exists
+    )
     
     res.status(200).json({message:"Analysis Complete",
       analysis

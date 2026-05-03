@@ -1,6 +1,7 @@
 import userModel from "../../models/user.model.js";
 import axios from 'axios'
 import { config } from "../../config/config.js";
+import resumeAnalysisModel from "../../models/resumeAnalysis.model.js";
 
 // ─── LeetCode GraphQL ─────────────────────────────────────────────────────────
 
@@ -107,16 +108,20 @@ export async function getDashboard(req, res){
       return res.status(400).json({message:"No profiles connected"})
     }
 
-    const [githubData, leetcodeData] = await Promise.all([
+    const [githubData, leetcodeData, resumeAnalysis] = await Promise.all([
       githubUsername? fetchGitHub(githubUsername) : null,
-      leetcodeUsername? fetchLeetCode(leetcodeUsername) : null
+      leetcodeUsername? fetchLeetCode(leetcodeUsername) : null,
+      resumeAnalysisModel.findOne({user: req.user._id}).sort({createdAt: -1})
     ])
-
 
     res.status(200).json({
       message:"Dashboard data fetched",
       github: githubData,
-      leetcode: leetcodeData
+      leetcode: leetcodeData,
+      resumeAnalysis : resumeAnalysis ? {
+        atsScore: resumeAnalysis.atsScore,
+        analyzedAt: resumeAnalysis.updatedAt
+      } : null
     })
 
   } catch(err){
