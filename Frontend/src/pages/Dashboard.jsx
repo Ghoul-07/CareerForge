@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 // Circular progress component
 function CircularProgress({
@@ -84,6 +85,13 @@ export default function Dashboard() {
   const [leetcode, setLeetcode] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
+
+  const comingSoon = [
+    { label: "Resume Analysis", link: "/resume", ready: true },
+    { label: "Interview Simulator", link: "/interview", ready: false },
+  ];
 
   useEffect(() => {
     async function fetchDashboard() {
@@ -284,20 +292,28 @@ export default function Dashboard() {
 
         {/* Coming soon */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {["Resume Analysis", "Interview Simulator"].map((item) => (
+          {comingSoon.map((item) => (
             <div
-              key={item}
-              className="bg-[#0f172a] border border-dashed border-[#1e293b] rounded-2xl p-6 flex flex-col gap-2 opacity-50"
+              key={item.label}
+              className="bg-[#0f172a] border border-dashed border-[#1e293b] rounded-2xl p-6 flex flex-col gap-2 "
             >
               <span className="text-xs font-mono tracking-widest uppercase text-slate-500">
-                Coming Soon
+                {item.ready ? "Available" : "Coming Soon"}
               </span>
               <span
                 className="text-lg font-bold text-slate-400"
                 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
               >
-                {item}
+                {item.label}
               </span>
+              {item.ready && (
+                <button
+                  onClick={() => navigate(item.link)}
+                  className="mt-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-all w-fit"
+                >
+                  Get Started →
+                </button>
+              )}
             </div>
           ))}
         </div>

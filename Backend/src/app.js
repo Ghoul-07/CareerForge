@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser"
 // ROUTERS
 import authRouter from "./routes/auth.routes.js"
 import userRouter from "./routes/user.routes.js"
+import resumeRouter from "./routes/resume.routes.js"
 
 const app = express()
 
@@ -23,6 +24,7 @@ app.use(morgan('dev'))       // logs request
 // USINIG ROUTERS
 app.use('/api/auth', authRouter)
 app.use('/api/user', userRouter)
+app.use('/api/resume', resumeRouter)
 
 export default app
 

@@ -19,12 +19,16 @@ if(!process.env.NODE_ENV){
 if(!process.env.GITHUB_TOKEN){
   throw new Error("GITHUB_TOKEN is not defined in env")
 }
+if(!process.env.GROQ_API_KEY){
+  throw new Error("GROQ_API_KEY is not defined in env")
+}
 
 export const config = {
   MONGO_URI: process.env.MONGO_URI,
   REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
   ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
   NODE_ENV: process.env.NODE_ENV,
-  GITHUB_TOKEN: process.env.GITHUB_TOKEN
+  GITHUB_TOKEN: process.env.GITHUB_TOKEN,
+  GROQ_API_KEY: process.env.GROQ_API_KEY
 }
 

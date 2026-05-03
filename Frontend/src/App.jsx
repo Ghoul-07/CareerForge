@@ -6,6 +6,7 @@ import Onboarding from "./pages/Onboarding";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "./App.css";
 import Navbar from "./components/Navbar";
+import Resume from "./pages/Resume";
 
 function App() {
   return (
@@ -28,6 +29,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Onboarding />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/resume"
+          element={
+            <ProtectedRoute>
+              <Resume />
             </ProtectedRoute>
           }
         />
