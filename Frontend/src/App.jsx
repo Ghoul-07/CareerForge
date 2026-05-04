@@ -7,6 +7,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import "./App.css";
 import Navbar from "./components/Navbar";
 import Resume from "./pages/Resume";
+import History from "./pages/History";
 
 function App() {
   return (
@@ -37,6 +38,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Resume />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute>
+              <History />
             </ProtectedRoute>
           }
         />

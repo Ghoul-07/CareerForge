@@ -83,7 +83,7 @@ export default function Dashboard() {
   const { accessToken, user } = useAuth();
   const [github, setGithub] = useState(null);
   const [leetcode, setLeetcode] = useState(null);
-  const [resumeAnalysis, setResumeAnalysis] = useState(null);
+  const [sessionCount, setSessionCount] = useState(0);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -107,7 +107,7 @@ export default function Dashboard() {
         );
         setGithub(response.data.github);
         setLeetcode(response.data.leetcode);
-        setResumeAnalysis(response.data.resumeAnalysis);
+        setSessionCount(response.data.sessionCount);
       } catch (err) {
         setError(err.response?.data?.message || "Something went wrong");
       } finally {
@@ -185,19 +185,21 @@ export default function Dashboard() {
             color="#6366f1"
           />
           <ReadinessCard label="GitHub Score" score={ghScore} color="#10b981" />
-          <ReadinessCard
-            label="Resume Match"
-            score={resumeAnalysis ? resumeAnalysis.atsScore : 0}
-            color="#f59e0b"
-          />
+          <div className="bg-[#0f172a] border border-[#1e293b] rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:border-[#334155] transition-all">
+            <span
+              className="text-5xl font-bold text-indigo-400"
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+            >
+              {sessionCount}
+            </span>
+            <span className="text-xs font-mono tracking-widest uppercase text-slate-500">
+              Resume Sessions
+            </span>
+            <span className="text-xs text-slate-600">analyses completed</span>
+          </div>
           <ReadinessCard
             label="Overall"
-            score={Math.round(
-              (dsaScore +
-                ghScore +
-                (resumeAnalysis ? resumeAnalysis.atsScore : 0)) /
-                3,
-            )}
+            score={Math.round((dsaScore + ghScore) / 2)}
             color="#ec4899"
           />
         </div>

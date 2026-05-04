@@ -108,20 +108,17 @@ export async function getDashboard(req, res){
       return res.status(400).json({message:"No profiles connected"})
     }
 
-    const [githubData, leetcodeData, resumeAnalysis] = await Promise.all([
+    const [githubData, leetcodeData, sessionCount] = await Promise.all([
       githubUsername? fetchGitHub(githubUsername) : null,
       leetcodeUsername? fetchLeetCode(leetcodeUsername) : null,
-      resumeAnalysisModel.findOne({user: req.user._id}).sort({createdAt: -1})
+      resumeAnalysisModel.countDocuments({user: req.user._id})
     ])
 
     res.status(200).json({
       message:"Dashboard data fetched",
       github: githubData,
       leetcode: leetcodeData,
-      resumeAnalysis : resumeAnalysis ? {
-        atsScore: resumeAnalysis.atsScore,
-        analyzedAt: resumeAnalysis.updatedAt
-      } : null
+      sessionCount
     })
 
   } catch(err){
