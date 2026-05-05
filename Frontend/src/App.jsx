@@ -10,6 +10,7 @@ import Resume from "./pages/Resume";
 import History from "./pages/History";
 import InterviewSetup from "./pages/Interview/InterviewSetup";
 import InterviewRoom from "./pages/Interview/InterviewRoom";
+import InterviewReport from "./pages/Interview/InterviewReport";
 
 function App() {
   return (
@@ -65,6 +66,14 @@ function App() {
           element={
             <ProtectedRoute>
               <InterviewRoom />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/interview/:id/report"
+          element={
+            <ProtectedRoute>
+              <InterviewReport />
             </ProtectedRoute>
           }
         />
