@@ -111,8 +111,11 @@ export async function getMe(req, res, next){
   res.status(200).json({
     message:"user successfully fetched",
     user:{
+      id: user._id,
       username: user.username,
-      email: user.email
+      email: user.email,
+      githubUsername: user.githubUsername,
+      leetcodeUsername: user.leetcodeUsername
     }
   })
 }
