@@ -8,6 +8,8 @@ function History() {
   const [expanded, setExpanded] = useState(null); // which session is expanded
   const { accessToken } = useAuth();
 
+  const [showJD, setShowJD] = useState([]);
+
   useEffect(() => {
     async function fetchHistory() {
       try {
@@ -58,6 +60,15 @@ function History() {
         <div className="w-10 h-10 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
+
+  function handleShowJD(result_id) {
+    setShowJD(
+      (prev) =>
+        prev.includes(result_id)
+          ? prev.filter((id) => id !== result_id) //remove
+          : [...prev, result_id], // add
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#020817] text-white py-10 ">
@@ -124,6 +135,25 @@ function History() {
                     {session.results.map((result, index) => (
                       <div key={index} className="flex flex-col gap-4">
                         {/* Result header */}
+
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => handleShowJD(result._id)}
+                          >
+                            Job Description{" "}
+                            {showJD.includes(result._id) ? "▲" : "▼"}
+                          </button>
+                        </div>
+
+                        {showJD.includes(result._id) && (
+                          <div className="bg-[#020817] border border-[#1e293b] rounded-xl p-4 max-h-48 overflow-y-auto">
+                            <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">
+                              {result.jobDescription}
+                            </p>
+                          </div>
+                        )}
+
                         <div className="flex items-center gap-3">
                           <span className="text-xl">
                             {index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉"}
@@ -156,6 +186,44 @@ function History() {
                               </span>
                             ))}
                           </div>
+                        </div>
+
+                        {/* Weak Points */}
+                        <div>
+                          <p className="text-xs font-mono text-slate-500 uppercase tracking-widest mb-2">
+                            Weak Points
+                          </p>
+                          <ul className="flex flex-col gap-2">
+                            {result.weakPoints.map((point, i) => (
+                              <li
+                                key={i}
+                                className="flex gap-3 items-start text-sm text-slate-400"
+                              >
+                                <span className="text-yellow-400 mt-0.5">
+                                  ⚠
+                                </span>
+                                {point}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* Improved Points */}
+                        <div>
+                          <p className="text-xs font-mono text-slate-500 uppercase tracking-widest mb-2">
+                            Improved Suggestions
+                          </p>
+                          <ul className="flex flex-col gap-2">
+                            {result.improvedPoints.map((point, i) => (
+                              <li
+                                key={i}
+                                className="flex gap-3 items-start text-sm text-slate-400"
+                              >
+                                <span className="text-green-400 mt-0.5">✓</span>
+                                {point}
+                              </li>
+                            ))}
+                          </ul>
                         </div>
 
                         {/* Overall Feedback */}
