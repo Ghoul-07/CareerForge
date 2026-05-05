@@ -100,6 +100,7 @@ export async function analyzeResume(req, res){
         size: req.file.size,
         mimetype: req.file.mimetype
       },
+      resumeText,
       results: analyses
     })
     

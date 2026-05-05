@@ -44,6 +44,10 @@ const resumeAnalysisSchema = new mongoose.Schema({
     },
     mimetype: {type : String}
   },
+  resumeText:{
+    type: String,
+    default: null
+  },
   results: [resultSchema]
 
 }, {timestamps:true}

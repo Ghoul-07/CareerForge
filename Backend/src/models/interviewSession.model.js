@@ -34,7 +34,7 @@ const interviewSessionSchema = new mongoose.Schema({
   resumeAnalysisSession: {
     type: mongoose.Schema.Types.ObjectId,
     ref:'ResumeAnalysis',
-    required: true
+    required:true
   },
   role:{
     type:String,
