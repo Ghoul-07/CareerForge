@@ -70,6 +70,15 @@ function History() {
     );
   }
 
+  const getDownloadUrl = (url, filename) => {
+    if (!url) return "#";
+
+    const safeName = filename
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[^a-zA-Z0-9_-]/g, "_");
+    return url.replace("/upload/", `/upload/fl_attachment:${safeName}/`);
+  };
+
   return (
     <div className="min-h-screen bg-[#020817] text-white py-10 ">
       <div className="w-full max-w-6xl mx-auto px-6">
@@ -110,9 +119,44 @@ function History() {
                   }
                 >
                   <div className="flex flex-col gap-1">
+                    {/* Display the resume */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        📄{" "}
+                        <span className="font-medium">
+                          {session.resume.originalName}
+                        </span>
+                      </div>
+
+                      {session.resume?.url && (
+                        <>
+                          <a
+                            href={session.resume.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-xs text-indigo-400 hover:text-indigo-300 underline"
+                          >
+                            View Resume
+                          </a>
+                          <a
+                            href={getDownloadUrl(
+                              session.resume?.url,
+                              session.resume?.originalName,
+                            )}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-green-400 text-xs hover:text-green-300 underline"
+                          >
+                            Download
+                          </a>
+                        </>
+                      )}
+                    </div>
+
                     <p className="text-xs font-mono text-slate-500">
                       {formatDate(session.createdAt)}
                     </p>
+
                     <div className="flex gap-2 flex-wrap mt-1">
                       {session.results.map((result, i) => (
                         <span

@@ -2,6 +2,7 @@ import { config } from "../../config/config.js";
 import Groq from 'groq-sdk'
 import pdfParse from 'pdf-parse-fork'
 import resumeAnalysisModel from "../../models/resumeAnalysis.model.js";
+import { uploadBufferToCloudinary } from "../../utils/uploadToCloudinary.js";
 
 const groq = new Groq({apiKey: config.GROQ_API_KEY})
 
@@ -63,6 +64,12 @@ export async function analyzeResume(req, res){
     const pdfData = await pdfParse(req.file.buffer)
     const resumeText = pdfData.text
 
+
+    const uploadResume = await uploadBufferToCloudinary(
+      req.file.buffer,
+      req.file.originalname
+    )
+
     // 3. analyze all JDs in parallel
 
     const analyses = await Promise.all(
@@ -86,12 +93,20 @@ export async function analyzeResume(req, res){
 
     const session = await resumeAnalysisModel.create({
       user: req.user._id,
+      resume:{
+        originalName: req.file.originalname,
+        url: uploadResume.secure_url,
+        publicId: uploadResume.public_id,
+        size: req.file.size,
+        mimetype: req.file.mimetype
+      },
       results: analyses
     })
     
     res.status(200).json({
       message:"Analysis Complete",
       sessionId: session._id,
+      resume: session.resume,
       results: analyses
     })
   }   catch(err){

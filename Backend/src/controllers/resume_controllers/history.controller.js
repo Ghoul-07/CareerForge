@@ -2,7 +2,7 @@ import resumeAnalysisModel from "../../models/resumeAnalysis.model.js";
 
 export async function getHistory(req, res){
   try{
-    const sessions = await resumeAnalysisModel.find({user: req.user._id}).sort({createdAt: -1}).select('results createdAt')
+    const sessions = await resumeAnalysisModel.find({user: req.user._id}).sort({createdAt: -1}).select('resume results createdAt')
     
     return res.status(200).json({message:"Past Sessions fetched",
       sessions : sessions

@@ -1,4 +1,4 @@
-import mongoose, { modelNames } from 'mongoose'
+import mongoose from 'mongoose'
 
 const resultSchema = new mongoose.Schema({
   jobDescription:{
@@ -26,6 +26,24 @@ const resumeAnalysisSchema = new mongoose.Schema({
     ref:"User",
     required: true
   }, 
+  resume : {
+    originalName : {
+      type: String,
+      required: true
+    },
+    url: {
+      type: String,
+      required: true
+    },
+    publicId : {
+      type : String,
+      required : true
+    },
+    size:{
+      type: Number
+    },
+    mimetype: {type : String}
+  },
   results: [resultSchema]
 
 }, {timestamps:true}
