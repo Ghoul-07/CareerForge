@@ -67,6 +67,16 @@ function Navbar() {
             History
           </NavLink>
           <NavLink
+            to="/interview/setup"
+            className={({ isActive }) =>
+              isActive
+                ? "text-white text-base font-semibold"
+                : "text-slate-400 hover:text-white text-base transition-all"
+            }
+          >
+            Interview
+          </NavLink>
+          <NavLink
             to="/onboarding"
             className={({ isActive }) =>
               isActive

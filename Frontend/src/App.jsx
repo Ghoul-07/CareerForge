@@ -8,6 +8,8 @@ import "./App.css";
 import Navbar from "./components/Navbar";
 import Resume from "./pages/Resume";
 import History from "./pages/History";
+import InterviewSetup from "./pages/Interview/InterviewSetup";
+import InterviewRoom from "./pages/Interview/InterviewRoom";
 
 function App() {
   return (
@@ -46,6 +48,23 @@ function App() {
           element={
             <ProtectedRoute>
               <History />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/interview/setup"
+          element={
+            <ProtectedRoute>
+              <InterviewSetup />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/interview/:id"
+          element={
+            <ProtectedRoute>
+              <InterviewRoom />
             </ProtectedRoute>
           }
         />

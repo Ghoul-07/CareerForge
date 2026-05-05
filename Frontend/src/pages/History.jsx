@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext.jsx";
 
 function History() {
   const [sessions, setSessions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [expanded, setExpanded] = useState(null); // which session is expanded
   const { accessToken } = useAuth();
 
@@ -13,6 +14,8 @@ function History() {
   useEffect(() => {
     async function fetchHistory() {
       try {
+        setLoading(true);
+        setError("");
         const response = await axios.get(
           "http://localhost:3000/api/resume/history",
           {
@@ -22,7 +25,7 @@ function History() {
         );
         setSessions(response.data.sessions);
       } catch (err) {
-        console.log(err);
+        setError(err.response?.data?.message || "failed to fetch sessions");
       } finally {
         setLoading(false);
       }
