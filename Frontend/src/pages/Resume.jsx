@@ -1,6 +1,5 @@
-import axios from "axios";
-import { useAuth } from "../context/AuthContext";
 import { useState, useRef } from "react";
+import api from "../api/api.js";
 
 function Resume() {
   const [resumeFile, setResumeFile] = useState(null);
@@ -8,7 +7,6 @@ function Resume() {
   const [analyses, setAnalyses] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { accessToken } = useAuth();
 
   const fileInputRef = useRef(null);
 
@@ -27,21 +25,15 @@ function Resume() {
         JSON.stringify(jobDescriptions.filter((jd) => jd.trim())),
       );
 
-      const response = await axios.post(
-        "http://localhost:3000/api/resume/analyze",
-        formData,
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "multipart/form-data",
-          },
+      const response = await api.post("/resume/analyze", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
-      );
+      });
 
       setAnalyses(response.data.results);
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      setError("Something went wrong. Please try again");
     } finally {
       setLoading(false);
     }

@@ -1,10 +1,10 @@
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import axios from "axios";
+import api from "../api/api.js";
 
 function Onboarding() {
-  const { accessToken, user } = useAuth();
+  const { user } = useAuth();
 
   const [form, setForm] = useState({
     githubUsername: user?.githubUsername || "",
@@ -27,13 +27,11 @@ function Onboarding() {
 
     try {
       setError("");
-      await axios.post("http://localhost:3000/api/user/onboarding", form, {
-        withCredentials: true,
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      await api.post("/user/onboarding", form);
+
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      setError("Something went wrong. Please try again");
     } finally {
       setLoading(false);
     }

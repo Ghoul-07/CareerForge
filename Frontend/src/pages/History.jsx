@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { useAuth } from "../context/AuthContext.jsx";
+import api from "../api/api.js";
 
 function History() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState(null); // which session is expanded
-  const { accessToken } = useAuth();
 
   const [showJD, setShowJD] = useState([]);
 
@@ -16,16 +14,10 @@ function History() {
       try {
         setLoading(true);
         setError("");
-        const response = await axios.get(
-          "http://localhost:3000/api/resume/history",
-          {
-            withCredentials: true,
-            headers: { Authorization: `Bearer ${accessToken}` },
-          },
-        );
+        const response = await api.get("/resume/history");
         setSessions(response.data.sessions);
       } catch (err) {
-        setError(err.response?.data?.message || "failed to fetch sessions");
+        setError("Something went wrong. Please try again");
       } finally {
         setLoading(false);
       }

@@ -8,13 +8,6 @@ function Navbar() {
 
   async function handleLogout() {
     try {
-      await axios.post(
-        "http://localhost:3000/api/auth/logout",
-        {},
-        {
-          withCredentials: true,
-        },
-      );
       logout();
       navigate("/login");
     } catch (err) {

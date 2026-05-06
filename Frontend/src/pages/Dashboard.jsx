@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import api from "../api/api.js";
 
 // Circular progress component
 function CircularProgress({
@@ -80,7 +80,7 @@ function ReadinessCard({ label, score, color }) {
 }
 
 export default function Dashboard() {
-  const { accessToken, user } = useAuth();
+  const { user } = useAuth();
   const [github, setGithub] = useState(null);
   const [leetcode, setLeetcode] = useState(null);
   const [sessionCount, setSessionCount] = useState(0);
@@ -98,18 +98,13 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchDashboard() {
       try {
-        const response = await axios.get(
-          "http://localhost:3000/api/user/dashboard",
-          {
-            withCredentials: true,
-            headers: { Authorization: `Bearer ${accessToken}` },
-          },
-        );
+        const response = await api.get("/user/dashboard");
+
         setGithub(response.data.github);
         setLeetcode(response.data.leetcode);
         setSessionCount(response.data.sessionCount);
       } catch (err) {
-        setError(err.response?.data?.message || "Something went wrong");
+        setError("Something went wrong. Please try again");
       } finally {
         setLoading(false);
       }

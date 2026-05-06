@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { useAuth } from "../../context/AuthContext.jsx";
+import api from "../../api/api.js";
 import { useNavigate } from "react-router-dom";
 
 function InterviewSetup() {
@@ -19,24 +18,16 @@ function InterviewSetup() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const { accessToken } = useAuth();
-
   const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchHistory() {
       try {
         setError("");
-        const response = await axios.get(
-          "http://localhost:3000/api/resume/history",
-          {
-            withCredentials: true,
-            headers: { Authorization: `Bearer ${accessToken}` },
-          },
-        );
+        const response = await api.get("/resume/history");
         setSessions(response.data.sessions);
       } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch sessions");
+        setError("Something went wrong. Please try again");
       } finally {
         setLoading(false);
       }
@@ -72,31 +63,17 @@ function InterviewSetup() {
       setSubmitting(true);
       setError("");
 
-      const createRes = await axios.post(
-        "http://localhost:3000/api/interview/create",
-        {
-          resumeAnalysisSessionId: selectedSessionId,
-          resultId: selectedResultId,
-          role,
-          difficulty,
-          interviewType,
-        },
-        {
-          withCredentials: true,
-          headers: { Authorization: `Bearer ${accessToken}` },
-        },
-      );
+      const createRes = await api.post("/interview/create", {
+        resumeAnalysisSessionId: selectedSessionId,
+        resultId: selectedResultId,
+        role,
+        difficulty,
+        interviewType,
+      });
 
       const interviewId = createRes.data.interviewSession._id;
 
-      const startRes = await axios.post(
-        `http://localhost:3000/api/interview/start/${interviewId}`,
-        {},
-        {
-          withCredentials: true,
-          headers: { Authorization: `Bearer ${accessToken}` },
-        },
-      );
+      const startRes = await api.post(`/interview/start/${interviewId}`, {});
 
       navigate(`/interview/${interviewId}`, {
         state: {

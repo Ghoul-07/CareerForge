@@ -1,13 +1,11 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
-import axios from "axios";
-import { useAuth } from "../../context/AuthContext";
+import api from "../../api/api.js";
 
 function InterviewRoom() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { accessToken } = useAuth();
 
   const [currentQuestion, setCurrentQuestion] = useState(
     location.state?.firstQuestion || null,
@@ -46,15 +44,7 @@ function InterviewRoom() {
       setSubmitting(true);
       setError("");
 
-      const response = await axios.post(
-        `http://localhost:3000/api/interview/answer/${id}`,
-        { answer },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      );
+      const response = await api.post(`/interview/answer/${id}`, { answer });
 
       setEvaluation(response.data.evaluation || null);
       setAnswer("");
@@ -68,7 +58,7 @@ function InterviewRoom() {
         setCanFinish(true);
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to submit answer");
+      setError("Something went wrong. Please try again");
     } finally {
       setSubmitting(false);
     }
@@ -89,15 +79,7 @@ function InterviewRoom() {
       setSubmitting(true);
       setError("");
 
-      const response = await axios.post(
-        `http://localhost:3000/api/interview/finish/${id}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      );
+      const response = await api.post(`/interview/finish/${id}`, {});
 
       navigate(`/interview/${id}/report`, {
         state: {

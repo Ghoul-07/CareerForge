@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import api from "../api/api.js";
 
 const AuthContext = createContext(null);
 
@@ -7,6 +8,24 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const logout = async () => {
+    try {
+      await axios.post(
+        "http://localhost:3000/api/auth/logout",
+        {},
+        {
+          withCredentials: true,
+        },
+      );
+    } catch (err) {
+      console.log("Logout error ", err);
+    } finally {
+      setUser(null);
+      setAccessToken(null);
+      delete api.defaults.headers.common.Authorization;
+    }
+  };
 
   useEffect(() => {
     async function tryRefresh() {
@@ -18,7 +37,9 @@ export function AuthProvider({ children }) {
             withCredentials: true,
           },
         );
-        setAccessToken(response.data.accessToken);
+        const newToken = response.data.accessToken;
+        setAccessToken(newToken);
+        api.defaults.headers.common.Authorization = `Bearer ${newToken}`;
 
         const me = await axios.get("http://localhost:3000/api/auth/getme", {
           withCredentials: true,
@@ -36,21 +57,69 @@ export function AuthProvider({ children }) {
     tryRefresh();
   }, []);
 
+  useEffect(() => {
+    const requestInterceptor = api.interceptors.request.use((config) => {
+      if (!config.headers.Authorization && accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+
+      return config;
+    });
+
+    const responseInterceptor = api.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+
+          try {
+            const refreshResponse = await axios.post(
+              "http://localhost:3000/api/auth/refresh-token",
+              {},
+              { withCredentials: true },
+            );
+
+            const newToken = refreshResponse.data.accessToken;
+
+            setAccessToken(newToken);
+
+            api.defaults.headers.common.Authorization = `Bearer ${newToken}`;
+            {
+              /* setAccessToken is async so it takes time to update, so this helps prevent race condition*/
+            }
+
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+            return await api(originalRequest);
+          } catch (refreshErr) {
+            await logout();
+            return Promise.reject(refreshErr);
+          }
+        }
+
+        return Promise.reject(error);
+      },
+    );
+
+    return () => {
+      api.interceptors.request.eject(requestInterceptor);
+      api.interceptors.response.eject(responseInterceptor);
+    };
+  }, [accessToken]);
+
   const login = (userData, token) => {
     setUser(userData);
     setAccessToken(token);
-  };
-
-  const logout = () => {
-    setUser(null);
-    setAccessToken(null);
+    api.defaults.headers.common.Authorization = `Bearer ${token}`;
   };
 
   // dont render if user is not logged in
   if (loading) return null;
 
   return (
-    <AuthContext.Provider value={{ user, accessToken, login, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
