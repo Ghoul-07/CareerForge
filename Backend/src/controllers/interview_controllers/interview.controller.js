@@ -1,5 +1,6 @@
 import resumeAnalysisModel from '../../models/resumeAnalysis.model.js'
 import interviewSessionModel from '../../models/interviewSession.model.js'
+import { generateInterviewPlan , evaluateInterviewAnswer} from '../../utils/InterviewAI.js'
 
 
 export async function createInterview(req, res){
@@ -93,44 +94,28 @@ export async function startInterview(req, res) {
     const jobDescription = selectedResult.jobDescription
 
 
-    const analysisResults = selectedResult;    {/* for AI interview evalutaion */}
+    {/* for AI interview evalutaion */}
     const resumeText = resumeAnalysis.resumeText
 
-    const mockPlan = {
-      focusAreas: ['mongoDB', 'Node.js', 'API design', 'Projects'],
-      questions:[
-        {
-          question: "Explain your leaderboard project",
-          category: "project-based",
-          difficulty: "intermediate",
-          expectedAnswerPoints: [
-            'frontend', 'backend', 'api design', 'database'
-          ],
-          whyAsked : "tests real world project understanding"
-        },
-        {
-          question: "What is REST and why is it used?",
-          category: "technical",
-          difficulty: "fresher",
-          expectedAnswerPoints: [
-            "stateless",
-            "client-server",
-            "http methods"
-          ],
-          whyAsked: "tests backend fundamentals"
-        }
-      ]
-    }
+    const aiPlan = await generateInterviewPlan({
+      resumeText,
+      jobDescription,
+      role: interviewSession.role,
+      difficulty: interviewSession.difficulty,
+      interviewType: interviewSession.interviewType,
+      analysisResults: selectedResult
+    })
 
-    interviewSession.plan = mockPlan
+    interviewSession.plan = aiPlan
+
     interviewSession.status = 'in_progress',
     interviewSession.currentQuestionIndex = 0
 
     await interviewSession.save()
 
     res.status(200).json({message:"interview started successfully", interviewSession,
-      firstQuestion: mockPlan.questions[0],
-      totalQuestions :  mockPlan.questions.length
+      firstQuestion: aiPlan.questions[0],
+      totalQuestions :  aiPlan.questions.length
     })
   } catch(err){
     return res.status(500).json({message:"internal server error"})
@@ -182,18 +167,28 @@ export async function answerQuestion(req, res){
 
     const currentQuestion = interviewSession.plan.questions[currentQuestionIndex]
 
-    const mockEvaluation = {
+    const aiEvaluation = await evaluateInterviewAnswer({
+      question: currentQuestion.question,
+      expectedAnswerPoints: currentQuestion.expectedAnswerPoints,
+      whyAsked: currentQuestion.whyAsked,
+      userAnswer: answer,
+      role: interviewSession.role,
+      difficulty: interviewSession.difficulty,
+      interviewType: interviewSession.interviewType
+    })
+
+    const evaluation = {
       questionIndex: currentQuestionIndex,
       question: currentQuestion.question,
       userAnswer: answer,
-      score: 7,
-      strengths: ['You answered the question clearly', 'You showed basic understanding'],
-      weaknesses: ['You lack technical depth', 'Use more examples from your project'],
-      improvedAnswer: "A stronger answer would explain the project architecture, the frontend/backend flow, database usage, API design, and the reasoning behind your technical decisions.",
-      followUpQuestion: 'Tell the challenges you faced while making this project'
+      score: aiEvaluation.score,
+      strengths: aiEvaluation.strengths,
+      weaknesses: aiEvaluation.weaknesses,
+      improvedAnswer: aiEvaluation.improvedAnswer,
+      followUpQuestion: aiEvaluation.followUpQuestion
     }
 
-    interviewSession.evaluations.push(mockEvaluation)
+    interviewSession.evaluations.push(evaluation)
     interviewSession.currentQuestionIndex += 1
 
     const nextIndex = interviewSession.currentQuestionIndex
@@ -203,7 +198,7 @@ export async function answerQuestion(req, res){
 
       return res.status(200).json({
         message:"Interview completed",
-        evaluation: mockEvaluation,
+        evaluation: evaluation,
         nextQuestion: null,
         canFinish: true
       })
@@ -212,7 +207,7 @@ export async function answerQuestion(req, res){
     await interviewSession.save()
 
     res.status(200).json({message:"Answer submitted successfully",
-      evaluation: mockEvaluation,
+      evaluation: evaluation,
       nextQuestion : interviewSession.plan.questions[nextIndex],
       currentQuestionIndex: nextIndex,
       totalQuestions: interviewSession.plan.questions.length
