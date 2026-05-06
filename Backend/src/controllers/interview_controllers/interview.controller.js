@@ -4,9 +4,9 @@ import interviewSessionModel from '../../models/interviewSession.model.js'
 
 export async function createInterview(req, res){
   try{
-    const {resumeAnalysisSessionId, role, difficulty, interviewType} = req.body
+    const {resumeAnalysisSessionId, resultId, role, difficulty, interviewType} = req.body
 
-    if(!resumeAnalysisSessionId || !role || !difficulty || !interviewType){
+    if(!resumeAnalysisSessionId || !resultId || !role || !difficulty || !interviewType){
       return res.status(400).json({message: "Please provide all details"})
     }
 
@@ -20,9 +20,18 @@ export async function createInterview(req, res){
       return res.status(400).json({message: "Session doesn't belong to active user, please enter valid sessionId"})
     }
 
+    const selectedResult = resumeAnalysisSession.results.find(
+      (result) => result._id.toString() === resultId.toString()
+    );
+
+    if(!selectedResult){
+      return res.status(400).json({message:"Selected job description does not exist"})
+    }
+
     const interviewSession = await interviewSessionModel.create({
       user: req.user._id,
       resumeAnalysisSession : resumeAnalysisSession._id,
+      selectedResultId: selectedResult._id,
       role,
       difficulty,
       interviewType,
@@ -74,9 +83,18 @@ export async function startInterview(req, res) {
     if (!resumeAnalysis) {
       return res.status(404).json({ message: "Linked resume analysis not found" });
     }
+    
+    const selectedResult = resumeAnalysis.results.id(interviewSession.selectedResultId)
 
-    const results = resumeAnalysis.results
-    const jobDescription = results[0]?.jobDescription
+    if(!selectedResult){
+      return res.status(400).json({message : "job description does not exist"})
+    }
+
+    const jobDescription = selectedResult.jobDescription
+
+
+    const analysisResults = selectedResult;    {/* for AI interview evalutaion */}
+    const resumeText = resumeAnalysis.resumeText
 
     const mockPlan = {
       focusAreas: ['mongoDB', 'Node.js', 'API design', 'Projects'],
@@ -84,7 +102,7 @@ export async function startInterview(req, res) {
         {
           question: "Explain your leaderboard project",
           category: "project-based",
-          difficulty: "medium",
+          difficulty: "intermediate",
           expectedAnswerPoints: [
             'frontend', 'backend', 'api design', 'database'
           ],
@@ -93,7 +111,7 @@ export async function startInterview(req, res) {
         {
           question: "What is REST and why is it used?",
           category: "technical",
-          difficulty: "easy",
+          difficulty: "fresher",
           expectedAnswerPoints: [
             "stateless",
             "client-server",

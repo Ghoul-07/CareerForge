@@ -6,6 +6,11 @@ import { useNavigate } from "react-router-dom";
 function InterviewSetup() {
   const [sessions, setSessions] = useState([]);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
+
+  const [selectedResultId, setSelectedResultId] = useState(null);
+  const [expandedSessionId, setExpandedSessionId] = useState(null);
+  const [expandedJDIds, setExpandedJDIs] = useState([]);
+
   const [role, setRole] = useState("");
   const [difficulty, setDifficulty] = useState("fresher");
   const [interviewType, setInterviewType] = useState("mixed");
@@ -52,7 +57,13 @@ function InterviewSetup() {
   const handleStartInterview = async (e) => {
     e.preventDefault();
 
-    if (!selectedSessionId || !role || !difficulty || !interviewType) {
+    if (
+      !selectedSessionId ||
+      !selectedResultId ||
+      !role ||
+      !difficulty ||
+      !interviewType
+    ) {
       setError("Please provide all details");
       return;
     }
@@ -65,6 +76,7 @@ function InterviewSetup() {
         "http://localhost:3000/api/interview/create",
         {
           resumeAnalysisSessionId: selectedSessionId,
+          resultId: selectedResultId,
           role,
           difficulty,
           interviewType,
@@ -106,9 +118,22 @@ function InterviewSetup() {
       </div>
     );
 
-  function handleSelect(sessionId) {
-    if (selectedSessionId === sessionId) setSelectedSessionId(null);
-    else setSelectedSessionId(sessionId);
+  function handleSelectSession(sessionId, resultId) {
+    if (selectedSessionId === sessionId) {
+      setSelectedSessionId(null);
+      setSelectedResultId(null);
+    } else {
+      setSelectedSessionId(sessionId);
+      setSelectedResultId(resultId);
+    }
+  }
+
+  function toggleJD(resultId) {
+    setExpandedJDIs((prev) =>
+      prev.includes(resultId)
+        ? prev.filter((id) => id !== resultId)
+        : [...prev, resultId],
+    );
   }
 
   return (
@@ -144,37 +169,110 @@ function InterviewSetup() {
                 Select Resume for Interview
               </p>
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4">
                 {sessions.map((session) => (
-                  <button
-                    type="button"
+                  <div
                     key={session._id}
-                    onClick={() => handleSelect(session._id)}
-                    className={`text-left p-4 rounded-xl border transition-all ${
-                      selectedSessionId === session._id
-                        ? "border-indigo-500 bg-indigo-500/10"
-                        : "border-[#1e293b] bg-[#0f172a] hover:border-indigo-500/40"
-                    }`}
+                    className="border border-[#1e293b] rounded-2xl bg-[#0f172a] overflow-hidden"
                   >
-                    <p className="font-medium text-white">
-                      📄 {session.resume?.originalName || "Unknown Resume"}
-                    </p>
+                    {/* Session Header */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedSessionId(
+                          expandedSessionId === session._id
+                            ? null
+                            : session._id,
+                        )
+                      }
+                      className="w-full text-left p-5 hover:bg-[#111c33] transition-all"
+                    >
+                      <p className="font-semibold text-white text-lg">
+                        📄 {session.resume?.originalName}
+                      </p>
 
-                    <p className="text-xs text-slate-500 mt-1">
-                      {formatDate(session.createdAt)}
-                    </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {formatDate(session.createdAt)}
+                      </p>
 
-                    <div className="flex gap-2 flex-wrap mt-3">
-                      {session.results?.map((result) => (
-                        <span
-                          key={result._id}
-                          className="text-xs px-2 py-0.5 rounded-full bg-[#020817] border border-[#1e293b] text-slate-400"
-                        >
-                          {result.difficulty} · {result.atsScore}%
-                        </span>
-                      ))}
-                    </div>
-                  </button>
+                      <div className="flex gap-2 flex-wrap mt-3">
+                        {session.results.map((result) => (
+                          <span
+                            key={result._id}
+                            className="text-xs px-2 py-0.5 rounded-full bg-[#020817] border border-[#1e293b] text-slate-400"
+                          >
+                            {result.difficulty} · {result.atsScore}%
+                          </span>
+                        ))}
+                      </div>
+                    </button>
+
+                    {/* Expanded Results */}
+                    {expandedSessionId === session._id && (
+                      <div className="border-t border-[#1e293b] p-5 flex flex-col gap-4">
+                        {session.results.map((result, index) => {
+                          const isJDOpen = expandedJDIds.includes(result._id);
+                          const isSelected = selectedResultId === result._id;
+
+                          return (
+                            <div
+                              key={result._id}
+                              className={`rounded-xl border p-4 transition-all ${
+                                isSelected
+                                  ? "border-indigo-500 bg-indigo-500/10"
+                                  : "border-[#1e293b] bg-[#020817]"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-4 mb-3">
+                                <div>
+                                  <p className="font-semibold text-white">
+                                    {result.difficulty} · {result.atsScore}%
+                                    Match
+                                  </p>
+
+                                  <p className="text-xs text-slate-500 mt-1">
+                                    Job Description #{index + 1}
+                                  </p>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleSelectSession(session._id, result._id)
+                                  }
+                                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                    isSelected
+                                      ? "bg-indigo-500 text-white"
+                                      : "bg-[#0f172a] border border-[#1e293b] text-slate-300 hover:border-indigo-500"
+                                  }`}
+                                >
+                                  {isSelected ? "Selected" : "Select"}
+                                </button>
+                              </div>
+
+                              <div className="bg-[#0f172a] border border-[#1e293b] rounded-xl p-4">
+                                <p
+                                  className={`text-sm text-slate-400 whitespace-pre-wrap ${
+                                    isJDOpen ? "" : "line-clamp-3"
+                                  }`}
+                                >
+                                  {result.jobDescription}
+                                </p>
+
+                                <button
+                                  type="button"
+                                  onClick={() => toggleJD(result._id)}
+                                  className="text-xs text-indigo-400 hover:text-indigo-300 mt-3"
+                                >
+                                  {isJDOpen ? "Hide JD" : "View Full JD"}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
