@@ -1,6 +1,7 @@
 import resumeAnalysisModel from '../../models/resumeAnalysis.model.js'
 import interviewSessionModel from '../../models/interviewSession.model.js'
 import { generateInterviewPlan , evaluateInterviewAnswer, generateFinalInterviewReport} from '../../utils/InterviewAI.js'
+import { populate } from 'dotenv'
 
 
 export async function createInterview(req, res){
@@ -268,4 +269,65 @@ export async function finishInterview(req, res){
     return res.status(500).json({message:"internal server error"})
   }
 
+}
+
+export async function getInterviewSession(req, res){
+  try{
+    const interviewId  = req.params.id
+
+    if(!interviewId){
+      return res.status(400).json({message:"please provide interview session id"})
+    }
+
+    const interviewSession = await interviewSessionModel.findById(interviewId)
+
+    if(!interviewSession){
+      return res.status(400).json({message:"session does not exist"})
+    }
+
+    if(!interviewSession.user.equals(req.user._id)){
+      return res.status(403).json({message:"User is not authorized"})
+    }
+
+    const totalQuestions = interviewSession.plan.questions.length
+    const currentIndex = interviewSession.currentQuestionIndex
+
+    const currentQuestion = interviewSession.status === 'in_progress' && currentIndex < totalQuestions 
+      ? interviewSession.plan.questions[currentIndex] 
+      : null
+
+
+    return res.status(200).json({message: "Interview session fetched successfully",
+      interviewSession,
+      currentQuestion,
+      totalQuestions,
+      currentQuestionIndex: currentIndex,
+      canFinish: interviewSession.status === 'in_progress' && currentIndex >= totalQuestions
+    })
+  } catch(err){
+    return res.status(500).json({message:"Internal server error"})
+  }
+
+}
+
+export async function getUserInterviews(req, res){
+  try{
+    if(!req.user._id){
+      return res.status(403).json({message:"UnAuthorized access"})
+    }
+    const interviews = await interviewSessionModel.find({
+      user: req.user._id,
+      status: 'in_progress'
+    }).populate("resumeAnalysisSession", "resume createdAt").sort({updatedAt: -1})
+
+
+    res.status(200).json({
+      message: "In-progress interviews fetched successfully",
+      count : interviews.length,
+      interviews
+    })
+  }
+  catch(err){
+    return res.status(500).json({message:"internal server error"})
+  }
 }

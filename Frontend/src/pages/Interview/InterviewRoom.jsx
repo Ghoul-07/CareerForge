@@ -1,6 +1,7 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
 import api from "../../api/api.js";
+import { useEffect } from "react";
 
 function InterviewRoom() {
   const { id } = useParams();
@@ -11,7 +12,9 @@ function InterviewRoom() {
     location.state?.firstQuestion || null,
   );
 
-  const [totalQuestions] = useState(location.state?.totalQuestions || 0);
+  const [totalQuestions, setTotalQuestions] = useState(
+    location.state?.totalQuestions || 0,
+  );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   const [answer, setAnswer] = useState("");
@@ -31,6 +34,22 @@ function InterviewRoom() {
   const progressPercent = totalQuestions
     ? Math.round((answeredCount / totalQuestions) * 100)
     : 0;
+
+  useEffect(() => {
+    async function fetchInterview() {
+      try {
+        const response = await api.get(`/interview/${id}`);
+
+        setCurrentQuestion(response.data.currentQuestion);
+        setTotalQuestions(response.data.totalQuestions);
+        setCurrentQuestionIndex(response.data.currentQuestionIndex);
+        setCanFinish(response.data.canFinish);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to load interview");
+      }
+    }
+    fetchInterview();
+  }, [id]);
 
   async function handleSubmitAnswer(e) {
     e.preventDefault();

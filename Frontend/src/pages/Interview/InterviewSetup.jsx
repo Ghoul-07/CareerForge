@@ -18,6 +18,8 @@ function InterviewSetup() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const [interviews, setInterviews] = useState([]);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,6 +35,23 @@ function InterviewSetup() {
       }
     }
     fetchHistory();
+  }, []);
+
+  useEffect(() => {
+    async function fetchInterviews() {
+      try {
+        setLoading(true);
+        setError("");
+        const response = await api.get("/interview");
+
+        setInterviews(response.data.interviews);
+      } catch (err) {
+        setError("Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchInterviews();
   }, []);
 
   const formatDate = (dateStr) => {
@@ -116,6 +135,54 @@ function InterviewSetup() {
   return (
     <div className="min-h-screen bg-[#020817] text-white py-10">
       <div className="w-full max-w-5xl mx-auto px-6">
+        {interviews.length > 0 && (
+          <div className="max-w-5xl mx-auto mb-10">
+            <p className="text-xs font-mono text-slate-500 uppercase tracking-widest mb-4">
+              Resume Previous Interview
+            </p>
+
+            <div className="flex flex-col gap-4">
+              {interviews.map((interview) => (
+                <div
+                  key={interview._id}
+                  className="bg-[#0f172a] border border-[#1e293b] rounded-2xl p-5 flex items-center justify-between"
+                >
+                  <div>
+                    <h3 className="text-white text-xl font-semibold">
+                      {interview.role}
+                    </h3>
+
+                    <p className="text-white-400 text-sm mt-1">
+                      Difficulty: {interview.difficulty}
+                    </p>
+                    <p className="text-white-400 text-sm mt-1">
+                      InterviewType: {interview.interviewType}
+                    </p>
+
+                    <div className="flex gap-4 mt-3 text-sm text-slate-500">
+                      <p>
+                        Started:{" "}
+                        {new Date(interview.createdAt).toLocaleDateString()}
+                      </p>
+
+                      <p>
+                        Progress: {interview.currentQuestionIndex}/
+                        {interview.plan.questions.length}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => navigate(`/interview/${interview._id}`)}
+                    className="bg-indigo-600 hover:bg-indigo-500 transition-all px-5 py-3 rounded-xl font-semibold text-white"
+                  >
+                    Resume
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="mb-8">
           <p className="text-xs font-mono tracking-widest text-indigo-400 uppercase mb-2">
             Interview Simulator
