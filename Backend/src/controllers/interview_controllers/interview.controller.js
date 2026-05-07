@@ -1,6 +1,6 @@
 import resumeAnalysisModel from '../../models/resumeAnalysis.model.js'
 import interviewSessionModel from '../../models/interviewSession.model.js'
-import { generateInterviewPlan , evaluateInterviewAnswer} from '../../utils/InterviewAI.js'
+import { generateInterviewPlan , evaluateInterviewAnswer, generateFinalInterviewReport} from '../../utils/InterviewAI.js'
 
 
 export async function createInterview(req, res){
@@ -247,50 +247,12 @@ export async function finishInterview(req, res){
       return res.status(400).json({message: "Please answer the questions first"})
     }
 
-    const totalScore = interviewSession.evaluations.reduce((sum, evalItem) => sum + evalItem.score, 0)
-
-    const averageScore = Math.round(totalScore / interviewSession.evaluations.length)
-
-    // extracting strengths and weaknesses
-
-    const strengths = []
-    const weakAreas = []
-
-    interviewSession.evaluations.forEach((evalItem) =>{
-      strengths.push(...evalItem.strengths),
-      weakAreas.push(...evalItem.weaknesses)
+    const finalReport = await generateFinalInterviewReport({
+      role: interviewSession.role,
+      difficulty: interviewSession.difficulty,
+      interviewType: interviewSession.interviewType,
+      evaluations: interviewSession.evaluations
     })
-
-    const uniqueStrengths = [...new Set(strengths)];
-    const uniqueWeakAreas = [...new Set(weakAreas)];
-
-    const recommendedTopics = uniqueWeakAreas.map((w) => {
-      if (w.toLowerCase().includes("api")) return "API Design";
-      if (w.toLowerCase().includes("database")) return "MongoDB";
-      if (w.toLowerCase().includes("depth")) return "System Design";
-      return "General Backend Concepts";
-    });
-
-
-    let finalVerdict = "";
-
-    if (averageScore >= 8) {
-      finalVerdict = "Strong candidate";
-    } else if (averageScore >= 6) {
-      finalVerdict = "Good candidate, needs improvement";
-    } else {
-      finalVerdict = "Needs significant improvement";
-    }
-
-    const finalReport = {
-      overallScore: averageScore,
-      technicalScore: averageScore,
-      communicationScore: averageScore,
-      strengths: uniqueStrengths,
-      weakAreas: uniqueWeakAreas,
-      recommendedTopics: [... new Set(recommendedTopics)],
-      finalVerdict: finalVerdict
-    }
 
     interviewSession.finalReport = finalReport
     interviewSession.status = 'finished'

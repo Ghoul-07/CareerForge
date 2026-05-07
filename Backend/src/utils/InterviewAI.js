@@ -153,3 +153,65 @@ export async function evaluateInterviewAnswer({
   const text = completion.choices[0].message.content
   return extractJSON(text)
 }
+
+export async function generateFinalInterviewReport({
+  role,
+  difficulty,
+  interviewType,
+  evaluations
+}){
+  const prompt = `
+  You are an expert interview coach.
+  
+  Generate a final interview performance report based on the candidate's answers and evaluations.
+
+  Interview Context:
+  Role: ${role}
+  Difficulty: ${difficulty}
+  Interview Type : ${interviewType}
+
+  Evaluations:
+  ${JSON.stringify(evaluations, null, 2)}
+  
+  Return ONLY valid JSON. No markdown. No explaination.
+
+  JSON format:{
+    "overallScore": number,
+    "technicalScore": number,
+    "communicationScore": number,
+    "strengths": ["string"],
+    "weakAreas": ["string"],
+    "recommendedTopics": ["string"],
+    "finalVerdict": "string"
+  }
+
+  Rules:
+  - Scores must be from 1 to 10.
+  - overallScore should reflect total performance.
+  - technicalScore should reflect correctness, depth, and technical clarity.
+  - communicationScore should reflect explanation quality and structure.
+  - strengths should contain 3-5 clear points.
+  - weakAreas should contain 3-5 clear points.
+  - recommendedTopics should contain 3-6 practical study topics.
+  - finalVerdict should be concise but useful.
+  - Be honest but encouraging.
+  `;
+  
+  const completion = await groq.chat.completions.create({
+    model:'llama-3.3-70b-versatile',
+    messages:[
+      {
+        role:'system',
+        content:'You are an expert interview coach. Return only valid JSON.'
+      },
+      {
+        role:'user',
+        content: prompt
+      }
+    ]
+  })
+
+  const text = completion.choices[0].message.content
+  return extractJSON(text)
+
+}
