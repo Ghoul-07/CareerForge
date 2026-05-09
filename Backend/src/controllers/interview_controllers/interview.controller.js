@@ -331,3 +331,55 @@ export async function getUserInterviews(req, res){
     return res.status(500).json({message:"internal server error"})
   }
 }
+
+export async function getInterviewHistory(req, res){
+  try{
+    const user = req.user._id
+
+    const interviews = await interviewSessionModel.find({user: user})
+      .populate("resumeAnalysisSession", "resume results createdAt")
+      .sort({updatedAt: -1})
+    
+    if(!interviews){
+      return res.status(200).json({message:"No interview found"})
+    }
+    const formattedInterviews = interviews.map((interview) => {
+
+      const selectedResult = interview.resumeAnalysisSession?.results?.find(
+        (result) => result._id.toString() === interview.selectedResultId?.toString()
+      )
+      return{
+          _id: interview._id,
+          role: interview.role,
+          difficulty: interview.difficulty,
+          interviewType: interview.interviewType,
+          status: interview.status,
+
+          resume: interview.resumeAnalysisSession?.resume,
+          jobDescription: selectedResult?.jobDescription || null,
+          atsScore: selectedResult?.atsScore || null,
+          analysisDifficulty: selectedResult?.difficulty || null,
+          resumeAnalysisCreatedAt: interview.resumeAnalysisSession?.createdAt,
+
+          currentQuestionIndex: interview.currentQuestionIndex,
+          totalQuestions: interview.plan?.questions?.length || 0,
+
+          finalReport: interview.finalReport,
+          overallScore: interview.finalReport?.overallScore || null,
+          technicalScore: interview.finalReport?.technicalScore || null,
+          communicationScore: interview.finalReport?.communicationScore || null,
+
+          createdAt: interview.createdAt,
+          updatedAt: interview.updatedAt,
+      }
+    });
+    
+
+      res.status(200).json({message: "Interview history fetched successfully",
+        count: formattedInterviews.length,
+        interviews: formattedInterviews
+      })
+    } catch(err){
+      return res.status(500).json({message: "internal server error"})
+    }
+}

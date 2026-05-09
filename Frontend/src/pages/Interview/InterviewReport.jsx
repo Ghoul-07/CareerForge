@@ -1,11 +1,48 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import api from "../../api/api.js";
 
 function InterviewReport() {
   const { id } = useParams();
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [finalReport, setFinalReport] = useState(
+    location.state?.finalReport || null,
+  );
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const finalReport = location.state?.finalReport;
+  useEffect(() => {
+    async function fetchReport() {
+      if (finalReport) return;
+
+      try {
+        setLoading(true);
+        const response = await api.get(`/interview/${id}`);
+
+        if (response.data.interviewSession.status !== "finished") {
+          setError("This Interview is not finished yet");
+          return;
+        }
+
+        setFinalReport(response.data.interviewSession.finalReport);
+      } catch (err) {
+        setError("something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchReport();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#020817] flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!finalReport) {
     return (

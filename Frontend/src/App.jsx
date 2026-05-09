@@ -11,6 +11,7 @@ import History from "./pages/History";
 import InterviewSetup from "./pages/Interview/InterviewSetup";
 import InterviewRoom from "./pages/Interview/InterviewRoom";
 import InterviewReport from "./pages/Interview/InterviewReport";
+import InterviewHistory from "./pages/Interview/InterviewHistory";
 
 function App() {
   return (
@@ -74,6 +75,14 @@ function App() {
           element={
             <ProtectedRoute>
               <InterviewReport />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/interview/history"
+          element={
+            <ProtectedRoute>
+              <InterviewHistory />
             </ProtectedRoute>
           }
         />
