@@ -2,6 +2,7 @@ import userModel from "../../models/user.model.js";
 import axios from 'axios'
 import { config } from "../../config/config.js";
 import resumeAnalysisModel from "../../models/resumeAnalysis.model.js";
+import interviewSessionModel from '../../models/interviewSession.model.js'
 
 // ─── LeetCode GraphQL ─────────────────────────────────────────────────────────
 
@@ -108,20 +109,112 @@ export async function getDashboard(req, res){
       return res.status(400).json({message:"No profiles connected"})
     }
 
-    const [githubData, leetcodeData, sessionCount] = await Promise.all([
+    const [githubData, leetcodeData, resumeSessions, interviews] = await Promise.all([
       githubUsername? fetchGitHub(githubUsername) : null,
       leetcodeUsername? fetchLeetCode(leetcodeUsername) : null,
-      resumeAnalysisModel.countDocuments({user: req.user._id})
+      resumeAnalysisModel.find({user: req.user._id}),
+      interviewSessionModel.find({user: req.user._id}).sort({createdAt: -1})
     ])
 
+
+    // Resume stats
+
+    const allResults = resumeSessions.flatMap((session) => session.results || [])
+    
+    const totalAtsScore = allResults.reduce((sum, result) => sum + (result.atsScore || 0), 0)
+
+    const averageAtsScore = allResults.length > 0 ? Math.round(totalAtsScore / allResults.length) : 0;
+
+    const bestAtsScore = allResults.length > 0 ? Math.max(...allResults.map((result) => result.atsScore || 0)) : 0;
+
+
+    // Interview stats
+    const completedInterviews = interviews.filter(
+      (interview) => interview.status === "finished"
+    );
+
+    const inProgressInterviews = interviews.filter(
+      (interview) => interview.status === "in_progress"
+    );
+
+    const totalOverallScore = completedInterviews.reduce(
+      (sum, interview) => sum + (interview.finalReport?.overallScore || 0),
+      0
+    );
+
+    const totalTechnicalScore = completedInterviews.reduce(
+      (sum, interview) => sum + (interview.finalReport?.technicalScore || 0),
+      0
+    );
+
+    const totalCommunicationScore = completedInterviews.reduce(
+      (sum, interview) => sum + (interview.finalReport?.communicationScore || 0),
+      0
+    );
+
+    const averageOverallScore =
+      completedInterviews.length > 0
+        ? Math.round(totalOverallScore / completedInterviews.length)
+        : 0;
+
+    const averageTechnicalScore =
+      completedInterviews.length > 0
+        ? Math.round(totalTechnicalScore / completedInterviews.length)
+        : 0;
+
+    const averageCommunicationScore =
+      completedInterviews.length > 0
+        ? Math.round(totalCommunicationScore / completedInterviews.length)
+        : 0;
+
+    const scoreTrend = completedInterviews.map((interview) => ({
+      date: interview.createdAt,
+      role: interview.role,
+      overallScore: interview.finalReport?.overallScore || 0,
+      technicalScore: interview.finalReport?.technicalScore || 0,
+      communicationScore: interview.finalReport?.communicationScore || 0,
+    }));
+
+    // Weak area frequency
+    const weakAreaMap = {};
+
+    completedInterviews.forEach((interview) => {
+      interview.finalReport?.weakAreas?.forEach((area) => {
+        weakAreaMap[area] = (weakAreaMap[area] || 0) + 1;
+      });
+    });
+
+    const weakAreaFrequency = Object.entries(weakAreaMap)
+      .map(([area, count]) => ({ area, count }))
+      .sort((a, b) => b.count - a.count);
+
     res.status(200).json({
-      message:"Dashboard data fetched",
+      message: "Dashboard data fetched",
+
       github: githubData,
       leetcode: leetcodeData,
-      sessionCount
-    })
+
+      resumeStats: {
+        totalSessions: resumeSessions.length,
+        totalResults: allResults.length,
+        averageAtsScore,
+        bestAtsScore,
+      },
+
+      interviewStats: {
+        totalInterviews: interviews.length,
+        completedInterviews: completedInterviews.length,
+        inProgressInterviews: inProgressInterviews.length,
+        averageOverallScore,
+        averageTechnicalScore,
+        averageCommunicationScore,
+        scoreTrend,
+        weakAreaFrequency,
+      },
+    });
 
   } catch(err){
+    
     return res.status(500).json({message: "internal server error"})
   }
 }

@@ -1,6 +1,18 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  BarChart,
+  Bar,
+  Legend,
+} from "recharts";
 import api from "../api/api.js";
 
 // Circular progress component
@@ -83,7 +95,8 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [github, setGithub] = useState(null);
   const [leetcode, setLeetcode] = useState(null);
-  const [sessionCount, setSessionCount] = useState(0);
+  const [resumeStats, setResumeStats] = useState(null);
+  const [interviewStats, setInterviewStats] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -102,7 +115,8 @@ export default function Dashboard() {
 
         setGithub(response.data.github);
         setLeetcode(response.data.leetcode);
-        setSessionCount(response.data.sessionCount);
+        setResumeStats(response.data.resumeStats);
+        setInterviewStats(response.data.interviewStats);
       } catch (err) {
         setError("Something went wrong. Please try again");
       } finally {
@@ -126,6 +140,18 @@ export default function Dashboard() {
     ? Math.min(100, Math.round(Math.log10(github.rawScore + 1) * 20))
     : 0;
 
+  const weakAreaChartData =
+    interviewStats?.weakAreaFrequency?.slice(0, 5).map((item) => ({
+      ...item,
+      shortArea:
+        item.area.length > 18 ? item.area.slice(0, 18) + "..." : item.area,
+    })) || [];
+
+  const scoreTrendData =
+    interviewStats?.scoreTrend?.map((item, index) => ({
+      ...item,
+      attempt: `Interview ${index + 1}`,
+    })) || [];
   if (loading)
     return (
       <div className="min-h-screen bg-[#020817] flex items-center justify-center">
@@ -185,12 +211,16 @@ export default function Dashboard() {
               className="text-5xl font-bold text-indigo-400"
               style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
             >
-              {sessionCount}
+              {resumeStats?.totalSessions || 0}
             </span>
-            <span className="text-xs font-mono tracking-widest uppercase text-slate-500">
+
+            <span className="text-xs font-mono tracking-widest uppercase text-slate-400">
               Resume Sessions
             </span>
-            <span className="text-xs text-slate-600">analyses completed</span>
+
+            <span className="text-xs text-slate-400">
+              Avg ATS: {resumeStats?.averageAtsScore || 0}%
+            </span>
           </div>
           <ReadinessCard
             label="Overall"
@@ -306,6 +336,134 @@ export default function Dashboard() {
           </div>
         )}
 
+        {interviewStats?.scoreTrend?.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <h2
+                className="text-lg font-bold-text-white"
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              >
+                Interview Progress
+              </h2>
+              <span className="text-xs font-mono text-slate-500 bg-[#0f172a] border border-[#1e293b] px-2 py-1 rounded-full">
+                Performance Trend
+              </span>
+            </div>
+
+            <div className="bg-[#0f172a] border border-[#1e293b] rounded-2xl p-6 h-[350px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={scoreTrendData}>
+                  <CartesianGrid stroke="#1e293b" />
+
+                  <XAxis
+                    dataKey="attempt"
+                    stroke="#64748b"
+                    tick={{ fill: "#64748b", fontSize: 12 }}
+                  />
+
+                  <YAxis
+                    stroke="$64748b"
+                    tick={{ fill: "#64748b", fontSize: 12 }}
+                    domain={[0, 10]}
+                  />
+
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#0f172a",
+                      border: "1px solid #1e293b",
+                      borderRadius: "12px",
+                      color: "#fff",
+                    }}
+                  />
+
+                  <Legend />
+
+                  <Line
+                    type="monotone"
+                    dataKey="overallScore"
+                    stroke="#6366f1"
+                    strokeWidth={3}
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="technicalScore"
+                    stroke="#10b981"
+                    strokeWidth={2}
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="communicationScore"
+                    stroke="#ec4899"
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {weakAreaChartData.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <h2
+                className="text-lg font-bold text-white"
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              >
+                Weak Areas
+              </h2>
+
+              <span className="text-xs font-mono text-slate-500 bg-[#0f172a] border border-[#1e293b] px-2 py-1 rounded-full">
+                Improvement Insights
+              </span>
+            </div>
+
+            <div className="bg-[#0f172a] border border-[#1e293b] rounded-2xl p-6 h-[380px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={weakAreaChartData}
+                  margin={{ top: 20, right: 20, left: 10, bottom: 70 }}
+                >
+                  <CartesianGrid stroke="#1e293b" />
+
+                  <XAxis
+                    dataKey="shortArea"
+                    stroke="#64748b"
+                    tick={{ fill: "#64748b", fontSize: 12 }}
+                    angle={-15}
+                    textAnchor="end"
+                    height={80}
+                  />
+
+                  <YAxis
+                    stroke="#64748b"
+                    tick={{ fill: "#64748b", fontSize: 12 }}
+                    allowDecimals={false}
+                  />
+
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#0f172a",
+                      border: "1px solid #1e293b",
+                      borderRadius: "12px",
+                      color: "#fff",
+                    }}
+                    labelStyle={{
+                      color: "#94a3b8",
+                    }}
+                    formatter={(value) => [`${value}`, "Count"]}
+                    labelFormatter={(_, payload) => {
+                      return payload?.[0]?.payload?.area || "";
+                    }}
+                  />
+
+                  <Bar dataKey="count" fill="#6366f1" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
         {/* Coming soon */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {comingSoon.map((item) => (
