@@ -262,7 +262,8 @@ export async function finishInterview(req, res){
 
     return res.status(200).json({
       message: "Interview finished successfully",
-      finalReport
+      finalReport,
+      interviewType: interviewSession.interviewType
     });
 
   } catch(err){

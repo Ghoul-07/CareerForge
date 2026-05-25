@@ -103,6 +103,7 @@ function InterviewRoom() {
       navigate(`/interview/${id}/report`, {
         state: {
           finalReport: response.data.finalReport,
+          interviewType: response.data.interviewType,
         },
       });
     } catch (err) {

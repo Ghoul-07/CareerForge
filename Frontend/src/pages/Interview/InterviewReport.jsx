@@ -9,8 +9,19 @@ function InterviewReport() {
   const [finalReport, setFinalReport] = useState(
     location.state?.finalReport || null,
   );
+
+  const [interviewType, setInterviewType] = useState(
+    location.state?.interviewType || null,
+  );
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const scoreLabels = {
+    technical: "Technical Score",
+    hr: "Role Readiness Score",
+    "project-based": "Project Depth Score",
+    mixed: "Technical Score",
+  };
 
   useEffect(() => {
     async function fetchReport() {
@@ -26,6 +37,7 @@ function InterviewReport() {
         }
 
         setFinalReport(response.data.interviewSession.finalReport);
+        setInterviewType(response.data.interviewSession.interviewType);
       } catch (err) {
         setError("something went wrong");
       } finally {
@@ -104,7 +116,7 @@ function InterviewReport() {
 
           <div className="bg-[#0f172a] border border-[#1e293b] rounded-2xl p-6">
             <p className="text-xs font-mono text-slate-500 uppercase tracking-widest mb-3">
-              Technical Score
+              {scoreLabels[interviewType] || "Technical Score"}
             </p>
             <p
               className={`text-5xl font-bold ${scoreColor(finalReport.technicalScore)}`}
