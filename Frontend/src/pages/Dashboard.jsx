@@ -105,7 +105,7 @@ export default function Dashboard() {
 
   const comingSoon = [
     { label: "Resume Analysis", link: "/resume", ready: true },
-    { label: "Interview Simulator", link: "/interview", ready: false },
+    { label: "Interview Simulator", link: "/interview/history", ready: true },
   ];
 
   useEffect(() => {
@@ -471,9 +471,6 @@ export default function Dashboard() {
               key={item.label}
               className="bg-[#0f172a] border border-dashed border-[#1e293b] rounded-2xl p-6 flex flex-col gap-2 "
             >
-              <span className="text-xs font-mono tracking-widest uppercase text-slate-500">
-                {item.ready ? "Available" : "Coming Soon"}
-              </span>
               <span
                 className="text-lg font-bold text-slate-400"
                 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}

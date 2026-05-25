@@ -65,9 +65,6 @@ function Resume() {
       <div className="w-full max-w-6xl mx-auto px-6">
         {/* Header */}
         <div className="mb-8">
-          <p className="text-xs font-mono tracking-widest text-indigo-400 uppercase mb-2">
-            Phase 2
-          </p>
           <h1
             className="text-3xl font-bold text-white"
             style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
