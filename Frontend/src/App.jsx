@@ -12,6 +12,7 @@ import InterviewSetup from "./pages/Interview/InterviewSetup";
 import InterviewRoom from "./pages/Interview/InterviewRoom";
 import InterviewReport from "./pages/Interview/InterviewReport";
 import InterviewHistory from "./pages/Interview/InterviewHistory";
+import ChatbotWidget from "./components/chatbot/ChatbotWidget";
 
 function App() {
   return (
@@ -87,6 +88,7 @@ function App() {
           }
         />
       </Routes>
+      <ChatbotWidget />
     </>
   );
 }

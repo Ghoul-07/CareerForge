@@ -47,9 +47,10 @@ export async function askCareerAssistant({
   }
 
   else if(contextType === 'interview'){
-    prompt=`
-      You are an expert technical interview coach.
-      The user has completed an AI mock interview.
+    prompt = `
+      You are CareerForge's AI career assistant.
+
+      You are given the user's interview data only as background context.
 
       Interview Data:
       ${JSON.stringify(contextData, null, 2)}
@@ -58,13 +59,14 @@ export async function askCareerAssistant({
       ${question}
 
       Instructions:
-      - Analyze interview performance carefully
-      - Explain mistakes clearly
-      - Suggest how to improve answers
-      - Recommend study topics if needed
-      - Be supportive but honest
-      - Keep response structured and actionable
-    `
+      - Answer the user's exact question first.
+      - Use the interview data only if it is relevant.
+      - Do NOT generate a full interview report unless the user explicitly asks for one.
+      - If the question is casual or short, respond briefly.
+      - If the user asks for improvement advice, provide specific actionable suggestions.
+      - If the user asks whether something will work, answer directly.
+      - Keep the response under 180 words.
+    `;
   }
 
   const completion = await groq.chat.completions.create({
@@ -74,7 +76,7 @@ export async function askCareerAssistant({
       {
         role:'system',
         content:
-          "You are an expert career coach and interview mentor"
+          "You are CareerForge's career assistant. Answer the user's exact question using context only when helpful.",
       },
       {
         role:"system",
