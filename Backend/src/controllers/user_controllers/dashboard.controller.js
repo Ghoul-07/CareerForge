@@ -103,10 +103,7 @@ export async function getDashboard(req, res){
 
     const {githubUsername, leetcodeUsername} = user
 
-    if(!githubUsername && !leetcodeUsername){
-      return res.status(400).json({message:"No profiles connected"})
-    }
-
+    
     const [githubData, leetcodeData, resumeSessions, interviews] = await Promise.all([
       githubUsername? fetchGitHub(githubUsername) : null,
       leetcodeUsername? fetchLeetCode(leetcodeUsername) : null,
