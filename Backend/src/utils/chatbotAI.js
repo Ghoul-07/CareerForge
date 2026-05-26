@@ -27,12 +27,22 @@ export async function askCareerAssistant({
   let prompt=""
 
   if(contextType === 'resume'){
+    const optimizedResumeContext = {
+      results: contextData.results?.map((result) => ({
+        atsScore: result.atsScore,
+        missingSkills: result.missingSkills,
+        weakPoints: result.weakPoints,
+        improvedPoints: result.improvedPoints,
+        overallFeedback: result.overallFeedback,
+        difficulty: result.difficulty,
+      })),
+    };
     prompt=`
       You are an expert career coach and resume mentor.
       The user has completed a resume analysis.
 
       Resume Analysis Data:
-      ${JSON.stringify(contextData, null, 2)}
+      ${JSON.stringify(optimizedResumeContext, null, 2)}
 
       User Question:
       ${question}
@@ -47,13 +57,30 @@ export async function askCareerAssistant({
   }
 
   else if(contextType === 'interview'){
+    const optimizedInterviewContext = {
+        role: contextData.role,
+        difficulty: contextData.difficulty,
+        interviewType: contextData.interviewType,
+
+        finalReport: {
+          overallScore: contextData.finalReport?.overallScore,
+          technicalScore: contextData.finalReport?.technicalScore,
+          communicationScore: contextData.finalReport?.communicationScore,
+          strengths: contextData.finalReport?.strengths,
+          weakAreas: contextData.finalReport?.weakAreas,
+          recommendedTopics: contextData.finalReport?.recommendedTopics,
+          finalVerdict: contextData.finalReport?.finalVerdict,
+        },
+      };
     prompt = `
       You are CareerForge's AI career assistant.
 
       You are given the user's interview data only as background context.
 
+      
+
       Interview Data:
-      ${JSON.stringify(contextData, null, 2)}
+      ${JSON.stringify(optimizedInterviewContext, null, 2)}
 
       User Question:
       ${question}
@@ -70,13 +97,22 @@ export async function askCareerAssistant({
   }
 
   const completion = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'llama-3.1-8b-instant',
     temperature: 0.5,
     messages:[
       {
         role:'system',
-        content:
-          "You are CareerForge's career assistant. Answer the user's exact question using context only when helpful.",
+        content: `
+          You are CareerForge's professional but friendly AI career coach.
+
+          Guidelines:
+          - Be supportive and conversational.
+          - Be polite and encouraging.
+          - Do not mimic slang aggressively.
+          - Maintain a mentor-like tone.
+          - Do NOT force interview analysis into every response.
+          - Only discuss interview feedback when relevant to the user's question.
+          `,
       },
       {
         role:"system",

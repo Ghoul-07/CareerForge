@@ -88,7 +88,10 @@ function App() {
           }
         />
       </Routes>
-      <ChatbotWidget />
+
+      <ProtectedRoute>
+        <ChatbotWidget />
+      </ProtectedRoute>
     </>
   );
 }
