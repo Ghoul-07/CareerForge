@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import api from "../../api/api";
-import { useAuth } from "../../contexts/AuthContext.js";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 function ChatbotWidget() {
   const [open, setOpen] = useState(false);
