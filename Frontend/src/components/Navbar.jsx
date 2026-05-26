@@ -10,9 +10,7 @@ function Navbar() {
     try {
       logout();
       navigate("/login");
-    } catch (err) {
-      console.log(err);
-    }
+    } catch (err) {}
   }
 
   return (

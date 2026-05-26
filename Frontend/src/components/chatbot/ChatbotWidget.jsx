@@ -57,7 +57,6 @@ function ChatbotWidget() {
           setSelectedContextId(finishedInterviews[0]._id);
         }
       } catch (err) {
-        console.log(err);
       } finally {
         setContextLoading(false);
       }

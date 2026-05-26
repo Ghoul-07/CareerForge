@@ -19,6 +19,10 @@ function extractJson(text) {
   }
 }
 
+function isRateLimitError(err) {
+  return err?.status === 429 || err?.error?.error?.code === "rate_limit_exceeded";
+}
+
 export async function askCareerAssistant({
   contextType,
   contextData,
@@ -95,31 +99,40 @@ export async function askCareerAssistant({
       - Keep the response under 180 words.
     `;
   }
+  try{
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      temperature: 0.5,
+      messages:[
+        {
+          role:'system',
+          content: `
+            You are CareerForge's professional but friendly AI career coach.
 
-  const completion = await groq.chat.completions.create({
-    model: 'llama-3.1-8b-instant',
-    temperature: 0.5,
-    messages:[
-      {
-        role:'system',
-        content: `
-          You are CareerForge's professional but friendly AI career coach.
+            Guidelines:
+            - Be supportive and conversational.
+            - Be polite and encouraging.
+            - Do not mimic slang aggressively.
+            - Maintain a mentor-like tone.
+            - Do NOT force interview analysis into every response.
+            - Only discuss interview feedback when relevant to the user's question.
+            `,
+        },
+        {
+          role:"system",
+          content: prompt 
+        }
+      ]
+    })
 
-          Guidelines:
-          - Be supportive and conversational.
-          - Be polite and encouraging.
-          - Do not mimic slang aggressively.
-          - Maintain a mentor-like tone.
-          - Do NOT force interview analysis into every response.
-          - Only discuss interview feedback when relevant to the user's question.
-          `,
-      },
-      {
-        role:"system",
-        content: prompt 
-      }
-    ]
-  })
+    return completion.choices[0].message.content
+  } catch(err){
+    if(isRateLimitError(err)){
+      const error = new Error("AI usage limit reached. Please try again after some time.")
+      error.statusCode = 429
+      throw error
+    }
 
-  return completion.choices[0].message.content
+    throw err
+  }
 }

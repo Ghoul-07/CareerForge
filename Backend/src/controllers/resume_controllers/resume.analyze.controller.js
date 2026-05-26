@@ -111,7 +111,7 @@ export async function analyzeResume(req, res){
       results: analyses
     })
   }   catch(err){
-    console.log(err)
+    
     return res.status(500).json({message:"Internal Server Error"})
   }
 }

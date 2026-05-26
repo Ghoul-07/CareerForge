@@ -65,7 +65,16 @@ export async function askChatbot(req, res) {
     })
 
   }catch(err){
-    return res.status(500).json({message:"internal server error"})
+    
+    if (err.statusCode === 429) {
+      return res.status(429).json({
+        message: err.message,
+      });
+    }
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
   }
 }
 

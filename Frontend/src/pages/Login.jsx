@@ -30,9 +30,7 @@ function Login() {
       } else {
         navigate("/dashboard");
       }
-    } catch (err) {
-      console.log(err);
-    }
+    } catch (err) {}
   }
 
   return (

@@ -7,6 +7,11 @@ function extractJSON(text){
   return JSON.parse(cleaned)
 }
 
+
+function isRateLimitError(err) {
+  return err?.status === 429 || err?.error?.error?.code === "rate_limit_exceeded";
+}
+
 export async function generateInterviewPlan({
   resumeText,
   jobDescription,
@@ -75,24 +80,34 @@ export async function generateInterviewPlan({
     - For "mixed", include 2 technical, 2 project-based, and 2 HR questions.
     - Questions must feel like a real interview.
     `;
-  const completion = await groq.chat.completions.create({
-    model:'llama-3.3-70b-versatile',
-    temperature: 0.7,
-    messages:[
-      {
-        role: 'system',
-        content: "You are an expert interview coach who creates questions based on the requested interview type. Return only valid JSON."
-      },
-      {
-        role: 'user',
-        content:prompt
+  try{
+    const completion = await groq.chat.completions.create({
+      model:'llama-3.3-70b-versatile',
+      temperature: 0.7,
+      messages:[
+        {
+          role: 'system',
+          content: "You are an expert interview coach who creates questions based on the requested interview type. Return only valid JSON."
+        },
+        {
+          role: 'user',
+          content:prompt
+        }
+      ]
+    })
+
+    const text = completion.choices[0].message.content
+
+    return extractJSON(text)
+  } catch(err){
+      if(isRateLimitError(err)){
+        const error = new Error("AI usage limit reached. Please try again after some time.")
+        error.statusCode = 429
+        throw error
       }
-    ]
-  })
 
-  const text = completion.choices[0].message.content
-
-  return extractJSON(text)
+      throw err
+    }
 }
 export async function evaluateInterviewAnswer({
   question,
@@ -142,25 +157,34 @@ export async function evaluateInterviewAnswer({
 - improvedAnswer should be practical and interview-ready
 - followUpQuestion should be based on the user's answer
   `
+  try{
+    const completion = await groq.chat.completions.create({
+      model:'llama-3.3-70b-versatile',
+      temperature:0.4,
+      messages: [
+        {
+          role:'system',
+          content: 'You are an expert technical interview evaluator. Return only valid JSON'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ]
 
-  const completion = await groq.chat.completions.create({
-    model:'llama-3.3-70b-versatile',
-    temperature:0.4,
-    messages: [
-      {
-        role:'system',
-        content: 'You are an expert technical interview evaluator. Return only valid JSON'
-      },
-      {
-        role: 'user',
-        content: prompt
+    })
+
+    const text = completion.choices[0].message.content
+    return extractJSON(text)
+  } catch(err){
+      if(isRateLimitError(err)){
+        const error = new Error("AI usage limit reached. Please try again after some time.")
+        error.statusCode = 429
+        throw error
       }
-    ]
 
-  })
-
-  const text = completion.choices[0].message.content
-  return extractJSON(text)
+      throw err
+    }
 }
 
 export async function generateFinalInterviewReport({
@@ -223,22 +247,32 @@ export async function generateFinalInterviewReport({
     - For HR interviews, do not mention coding, APIs, databases, or technical implementation unless the candidate discussed them directly.
     - For HR interviews, focus feedback on confidence, clarity, examples, behavioral framing, professionalism, and role readiness.
     `;
-  
-  const completion = await groq.chat.completions.create({
-    model:'llama-3.3-70b-versatile',
-    messages:[
-      {
-        role:'system',
-        content:'You are an expert interview coach. Return only valid JSON.'
-      },
-      {
-        role:'user',
-        content: prompt
-      }
-    ]
-  })
+    try{
+      const completion = await groq.chat.completions.create({
+        model:'llama-3.3-70b-versatile',
+        messages:[
+          {
+            role:'system',
+            content:'You are an expert interview coach. Return only valid JSON.'
+          },
+          {
+            role:'user',
+            content: prompt
+          }
+        ]
+      })
 
-  const text = completion.choices[0].message.content
-  return extractJSON(text)
+      const text = completion.choices[0].message.content
+      return extractJSON(text)
+
+    } catch(err){
+      if(isRateLimitError(err)){
+        const error = new Error("AI usage limit reached. Please try again after some time.")
+        error.statusCode = 429
+        throw error
+      }
+
+      throw err
+    }
 
 }

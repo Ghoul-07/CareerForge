@@ -119,6 +119,11 @@ export async function startInterview(req, res) {
       totalQuestions :  aiPlan.questions.length
     })
   } catch(err){
+    if (err.statusCode === 429) {
+      return res.status(429).json({
+        message: err.message,
+      });
+    }
     return res.status(500).json({message:"internal server error"})
   }
 
@@ -214,6 +219,11 @@ export async function answerQuestion(req, res){
       totalQuestions: interviewSession.plan.questions.length
     })
   } catch(err){
+    if (err.statusCode === 429) {
+      return res.status(429).json({
+        message: err.message,
+      });
+    }
     return res.status(500).json({message:"Internal server error"})
   }
 }
@@ -267,6 +277,11 @@ export async function finishInterview(req, res){
     });
 
   } catch(err){
+    if (err.statusCode === 429) {
+      return res.status(429).json({
+        message: err.message,
+      });
+    }
     return res.status(500).json({message:"internal server error"})
   }
 
