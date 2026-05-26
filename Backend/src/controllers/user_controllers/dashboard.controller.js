@@ -54,7 +54,6 @@ async function fetchLeetCode(username) {
       easy,
       medium,
       hard,
-      rawScore:    easy * 1 + medium * 3 + hard * 5,
     };
   } catch {
     return null;
@@ -92,7 +91,6 @@ async function fetchGitHub(username) {
       followers:   ghUser.followers || 0,
       totalStars,
       totalForks,
-      rawScore:    totalStars * 3 + totalForks * 2 + ghUser.public_repos + ghUser.followers * 2,
     };
   } catch {
     return null;

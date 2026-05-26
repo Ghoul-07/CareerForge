@@ -15,42 +15,6 @@ import {
 } from "recharts";
 import api from "../api/api.js";
 
-// Circular progress component
-function CircularProgress({
-  value,
-  size = 120,
-  stroke = 10,
-  color = "#6366f1",
-}) {
-  const r = (size - stroke) / 2;
-  const circ = 2 * Math.PI * r;
-  const offset = circ - (value / 100) * circ;
-  return (
-    <svg width={size} height={size} className="rotate-[-90deg]">
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={r}
-        fill="none"
-        stroke="#1e293b"
-        strokeWidth={stroke}
-      />
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={r}
-        fill="none"
-        stroke={color}
-        strokeWidth={stroke}
-        strokeDasharray={circ}
-        strokeDashoffset={offset}
-        strokeLinecap="round"
-        style={{ transition: "stroke-dashoffset 1s ease" }}
-      />
-    </svg>
-  );
-}
-
 // Stat card component
 function StatCard({ label, value, sub, accent = "#6366f1" }) {
   return (
@@ -65,28 +29,6 @@ function StatCard({ label, value, sub, accent = "#6366f1" }) {
         {value ?? "—"}
       </span>
       {sub && <span className="text-xs text-slate-500">{sub}</span>}
-    </div>
-  );
-}
-
-// Readiness card
-function ReadinessCard({ label, score, color }) {
-  return (
-    <div className="bg-[#0f172a] border border-[#1e293b] rounded-2xl p-6 flex flex-col items-center gap-3 hover:border-[#334155] transition-all">
-      <div className="relative">
-        <CircularProgress value={score} color={color} />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span
-            className="text-xl font-bold text-white"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-          >
-            {score}%
-          </span>
-        </div>
-      </div>
-      <span className="text-sm font-mono tracking-wider text-slate-400 uppercase">
-        {label}
-      </span>
     </div>
   );
 }
@@ -127,18 +69,6 @@ export default function Dashboard() {
   }, []);
 
   // Compute readiness scores
-  const dsaScore = leetcode
-    ? Math.min(
-        100,
-        Math.round(
-          (leetcode.easy * 1 + leetcode.medium * 3 + leetcode.hard * 5) / 30,
-        ),
-      )
-    : 0;
-
-  const ghScore = github
-    ? Math.min(100, Math.round(Math.log10(github.rawScore + 1) * 20))
-    : 0;
 
   const weakAreaChartData =
     interviewStats?.weakAreaFrequency?.slice(0, 5).map((item) => ({
@@ -199,142 +129,35 @@ export default function Dashboard() {
         </button>
 
         {/* Readiness scores */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-          <ReadinessCard
-            label="DSA Readiness"
-            score={dsaScore}
-            color="#6366f1"
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
+          <StatCard
+            label="Completed Interviews"
+            value={interviewStats?.completedInterviews || 0}
+            sub={`${interviewStats?.inProgressInterviews || 0} in progress`}
           />
-          <ReadinessCard label="GitHub Score" score={ghScore} color="#10b981" />
-          <div className="bg-[#0f172a] border border-[#1e293b] rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:border-[#334155] transition-all">
-            <span
-              className="text-5xl font-bold text-indigo-400"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
-              {resumeStats?.totalSessions || 0}
-            </span>
 
-            <span className="text-xs font-mono tracking-widest uppercase text-slate-400">
-              Resume Sessions
-            </span>
+          <StatCard
+            label="Avg Interview Score"
+            value={
+              interviewStats?.averageOverallScore
+                ? `${interviewStats.averageOverallScore}/10`
+                : "—"
+            }
+            sub="across completed interviews"
+          />
 
-            <span className="text-xs text-slate-400">
-              Avg ATS: {resumeStats?.averageAtsScore || 0}%
-            </span>
-          </div>
-          <ReadinessCard
-            label="Overall"
-            score={Math.round((dsaScore + ghScore) / 2)}
-            color="#ec4899"
+          <StatCard
+            label="Resume Sessions"
+            value={resumeStats?.totalSessions || 0}
+            sub={`Avg ATS: ${resumeStats?.averageAtsScore || 0}%`}
+          />
+
+          <StatCard
+            label="Best ATS Score"
+            value={`${resumeStats?.bestAtsScore || 0}%`}
+            sub="highest resume match"
           />
         </div>
-
-        {/* GitHub Stats */}
-        {github && (
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <a
-                href={`https://github.com/${user?.githubUsername}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <img
-                  src={github.avatar}
-                  alt="gh avatar"
-                  className="w-8 h-8 rounded-full"
-                />
-              </a>
-              <h2
-                className="text-lg font-bold text-white"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-              >
-                GitHub
-              </h2>
-              <span className="text-xs font-mono text-slate-500 bg-[#0f172a] border border-[#1e293b] px-2 py-1 rounded-full">
-                Profile Stats
-              </span>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard
-                label="Stars"
-                value={github.totalStars}
-                sub="across all repos"
-                accent="#f59e0b"
-              />
-              <StatCard
-                label="Forks"
-                value={github.totalForks}
-                sub="total forks"
-                accent="#10b981"
-              />
-              <StatCard
-                label="Repos"
-                value={github.publicRepos}
-                sub="public repositories"
-                accent="#6366f1"
-              />
-              <StatCard
-                label="Followers"
-                value={github.followers}
-                sub="GitHub followers"
-                accent="#ec4899"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* LeetCode Stats */}
-        {leetcode && (
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <a
-                href={`https://leetcode.com/${user.leetcodeUsername}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <img
-                  src={leetcode.avatar}
-                  alt="lc avatar"
-                  className="w-8 h-8 rounded-full"
-                />
-              </a>
-              <h2
-                className="text-lg font-bold text-white"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-              >
-                LeetCode
-              </h2>
-              <span className="text-xs font-mono text-slate-500 bg-[#0f172a] border border-[#1e293b] px-2 py-1 rounded-full">
-                Problem Solving
-              </span>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard
-                label="Total Solved"
-                value={leetcode.totalSolved}
-                sub="problems solved"
-              />
-              <StatCard
-                label="Easy"
-                value={leetcode.easy}
-                sub={`${Math.round((leetcode.easy / leetcode.totalSolved) * 100)}% of solved`}
-                accent="#10b981"
-              />
-              <StatCard
-                label="Medium"
-                value={leetcode.medium}
-                sub={`${Math.round((leetcode.medium / leetcode.totalSolved) * 100)}% of solved`}
-                accent="#f59e0b"
-              />
-              <StatCard
-                label="Hard"
-                value={leetcode.hard}
-                sub={`${Math.round((leetcode.hard / leetcode.totalSolved) * 100)}% of solved`}
-                accent="#ef4444"
-              />
-            </div>
-          </div>
-        )}
 
         {interviewStats?.scoreTrend?.length > 0 && (
           <div className="mb-8">
@@ -461,6 +284,113 @@ export default function Dashboard() {
                   <Bar dataKey="count" fill="#6366f1" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* GitHub Stats */}
+        {github && (
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <a
+                href={`https://github.com/${user?.githubUsername}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <img
+                  src={github.avatar}
+                  alt="gh avatar"
+                  className="w-8 h-8 rounded-full"
+                />
+              </a>
+              <h2
+                className="text-lg font-bold text-white"
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              >
+                GitHub
+              </h2>
+              <span className="text-xs font-mono text-slate-500 bg-[#0f172a] border border-[#1e293b] px-2 py-1 rounded-full">
+                Profile Stats
+              </span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard
+                label="Stars"
+                value={github.totalStars}
+                sub="across all repos"
+                accent="#f59e0b"
+              />
+              <StatCard
+                label="Forks"
+                value={github.totalForks}
+                sub="total forks"
+                accent="#10b981"
+              />
+              <StatCard
+                label="Repos"
+                value={github.publicRepos}
+                sub="public repositories"
+                accent="#6366f1"
+              />
+              <StatCard
+                label="Followers"
+                value={github.followers}
+                sub="GitHub followers"
+                accent="#ec4899"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* LeetCode Stats */}
+        {leetcode && (
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <a
+                href={`https://leetcode.com/${user.leetcodeUsername}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <img
+                  src={leetcode.avatar}
+                  alt="lc avatar"
+                  className="w-8 h-8 rounded-full"
+                />
+              </a>
+              <h2
+                className="text-lg font-bold text-white"
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              >
+                LeetCode
+              </h2>
+              <span className="text-xs font-mono text-slate-500 bg-[#0f172a] border border-[#1e293b] px-2 py-1 rounded-full">
+                Problem Solving
+              </span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard
+                label="Total Solved"
+                value={leetcode.totalSolved}
+                sub="problems solved"
+              />
+              <StatCard
+                label="Easy"
+                value={leetcode.easy}
+                sub={`${Math.round((leetcode.easy / leetcode.totalSolved) * 100)}% of solved`}
+                accent="#10b981"
+              />
+              <StatCard
+                label="Medium"
+                value={leetcode.medium}
+                sub={`${Math.round((leetcode.medium / leetcode.totalSolved) * 100)}% of solved`}
+                accent="#f59e0b"
+              />
+              <StatCard
+                label="Hard"
+                value={leetcode.hard}
+                sub={`${Math.round((leetcode.hard / leetcode.totalSolved) * 100)}% of solved`}
+                accent="#ef4444"
+              />
             </div>
           </div>
         )}
