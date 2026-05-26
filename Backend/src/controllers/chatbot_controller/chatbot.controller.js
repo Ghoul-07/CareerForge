@@ -34,6 +34,25 @@ export async function askChatbot(req, res) {
       return res.status(400).json({message: "Invalid context type"})
     }
 
+    const casualReplies = {
+      "ok": "Glad I could help!",
+      "okay": "Glad I could help!",
+      "got it": "Awesome 👍",
+      "k": "👍",
+      "k noted": "Gotcha 😄",
+      "thanks": "You're welcome!",
+      "thank you": "Happy to help!",
+    };
+
+    const normalizedQuestion = question.trim().toLowerCase();
+
+    if (casualReplies[normalizedQuestion]) {
+      return res.status(200).json({
+        message: "Quick reply generated",
+        answer: casualReplies[normalizedQuestion],
+      });
+    }
+    
     const answer = await askCareerAssistant({
       contextType,
       contextData,
