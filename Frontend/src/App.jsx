@@ -13,8 +13,10 @@ import InterviewRoom from "./pages/Interview/InterviewRoom";
 import InterviewReport from "./pages/Interview/InterviewReport";
 import InterviewHistory from "./pages/Interview/InterviewHistory";
 import ChatbotWidget from "./components/chatbot/ChatbotWidget";
+import { useAuth } from "./context/AuthContext";
 
 function App() {
+  const { user } = useAuth();
   return (
     <>
       <Navbar />
@@ -89,9 +91,7 @@ function App() {
         />
       </Routes>
 
-      <ProtectedRoute>
-        <ChatbotWidget />
-      </ProtectedRoute>
+      {user && <ChatbotWidget />}
     </>
   );
 }
