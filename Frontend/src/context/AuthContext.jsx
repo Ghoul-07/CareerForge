@@ -3,6 +3,7 @@ import axios from "axios";
 import api from "../api/api.js";
 
 const AuthContext = createContext(null);
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -12,7 +13,7 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       await axios.post(
-        "http://localhost:3000/api/auth/logout",
+        `${BASE_URL}/auth/logout`,
         {},
         {
           withCredentials: true,
@@ -31,7 +32,7 @@ export function AuthProvider({ children }) {
     async function tryRefresh() {
       try {
         const response = await axios.post(
-          "http://localhost:3000/api/auth/refresh-token",
+          `${BASE_URL}/auth/refresh-token`,
           {}, // url, request body, headers or withCredential
           {
             withCredentials: true,
@@ -41,7 +42,7 @@ export function AuthProvider({ children }) {
         setAccessToken(newToken);
         api.defaults.headers.common.Authorization = `Bearer ${newToken}`;
 
-        const me = await axios.get("http://localhost:3000/api/auth/getme", {
+        const me = await axios.get(`${BASE_URL}/auth/getme`, {
           withCredentials: true,
           headers: { Authorization: `Bearer ${response.data.accessToken}` },
         });
@@ -76,7 +77,7 @@ export function AuthProvider({ children }) {
 
           try {
             const refreshResponse = await axios.post(
-              "http://localhost:3000/api/auth/refresh-token",
+              `${BASE_URL}/auth/refresh-token`,
               {},
               { withCredentials: true },
             );

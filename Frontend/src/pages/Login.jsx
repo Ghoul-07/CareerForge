@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const navigate = useNavigate();
@@ -15,13 +17,9 @@ function Login() {
     e.preventDefault();
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
-        form,
-        {
-          withCredentials: true,
-        },
-      );
+      const response = await axios.post(`${BASE_URL}/auth/login`, form, {
+        withCredentials: true,
+      });
 
       const { user, accessToken } = response.data;
 

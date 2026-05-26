@@ -2,6 +2,7 @@ import express from "express"
 import morgan from 'morgan'
 import cors from 'cors'
 import cookieParser from "cookie-parser"
+import { config } from "./config/config.js"
 
 // ROUTERS
 import authRouter from "./routes/auth.routes.js"
@@ -17,7 +18,7 @@ const app = express()
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-  origin: 'http://localhost:5173',  // frontend URL
+  origin: config.FRONTEND_URL,  // frontend URL
   credentials: true                  // allow cookies
 }))
 app.use(morgan('dev'))       // logs request
