@@ -123,6 +123,7 @@ function ChatbotWidget() {
 
     setMessages(initial);
     setContextType("interview");
+    setError("");
     localStorage.removeItem("careerforge_chat_messages");
   }
 

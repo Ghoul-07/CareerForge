@@ -3,10 +3,11 @@ import { analyzeResume } from '../controllers/resume_controllers/resume.analyze.
 import { verifyToken} from '../middlewares/auth.middleware.js'
 import upload from '../middlewares//multer.config.js'
 import { getHistory } from '../controllers/resume_controllers/history.controller.js'
+import { uploadLimiter } from '../middlewares/rateLimit.middleware.js'
 
 const resumeRouter = express.Router()
 
-resumeRouter.post('/analyze', verifyToken, upload.single('resume'), analyzeResume)
+resumeRouter.post('/analyze', verifyToken, uploadLimiter, upload.single('resume'), analyzeResume)
 resumeRouter.get('/history', verifyToken, getHistory)
 
 export default resumeRouter
