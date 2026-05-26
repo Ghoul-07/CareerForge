@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import api from "../../api/api";
+import { useAuth } from "../../contexts/AuthContext";
 
 function ChatbotWidget() {
   const [open, setOpen] = useState(false);
@@ -12,8 +13,12 @@ function ChatbotWidget() {
   const [contextType, setContextType] = useState("interview");
   const [selectedContextId, setSelectedContextId] = useState("");
 
+  const { user } = useAuth();
+
+  const chatStorageKey = `careerforge_chat_messages_${user?.email}`;
+
   const [messages, setMessages] = useState(() => {
-    const saved = localStorage.getItem("careerforge_chat_messages");
+    const saved = localStorage.getItem(chatStorageKey);
 
     return saved
       ? JSON.parse(saved)
@@ -124,7 +129,7 @@ function ChatbotWidget() {
     setMessages(initial);
     setContextType("interview");
     setError("");
-    localStorage.removeItem("careerforge_chat_messages");
+    localStorage.removeItem(chatStorageKey);
   }
 
   function handleContextTypeChange(type) {
@@ -143,7 +148,7 @@ function ChatbotWidget() {
   }, [messages, loading]);
 
   useEffect(() => {
-    localStorage.setItem("careerforge_chat_messages", JSON.stringify(messages));
+    localStorage.setItem(chatStorageKey, JSON.stringify(messages));
   }, [messages]);
 
   return (
