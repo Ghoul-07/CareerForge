@@ -83,7 +83,7 @@ export async function postLoginUser(req, res, next){
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: config.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000
     })
 
@@ -161,7 +161,7 @@ export async function refreshToken(req, res, next){
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly:true,
       secure: config.NODE_ENV === 'production',
-      sameSite:'strict',
+      sameSite: config.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000
     })
 
@@ -192,7 +192,7 @@ export async function logout(req, res, next){
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'strict'
+      sameSite: config.NODE_ENV === "production" ? "none" : "strict",
     })
 
     return res.status(200).json({message:"successfully logged out"})
@@ -220,7 +220,7 @@ export async function logoutAll(req, res, next){
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'strict'
+      sameSite: config.NODE_ENV === "production" ? "none" : "strict",
     })
 
     return res.status(200).json({message:"successfully logged out"})
