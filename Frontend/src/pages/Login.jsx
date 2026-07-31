@@ -7,14 +7,17 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState(""); // 1. Added error state
   const navigate = useNavigate();
   const { login } = useAuth();
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
+
   async function handleSubmit(e) {
     e.preventDefault();
+    setError(""); // Clear previous errors before retrying
 
     try {
       const response = await axios.post(`${BASE_URL}/auth/login`, form, {
@@ -30,7 +33,15 @@ function Login() {
       } else {
         navigate("/dashboard");
       }
-    } catch (err) {}
+    } catch (err) {
+      // 2. Extract backend error message or fallback to default
+      const message =
+        err.response?.data?.message ||
+        err.response?.data ||
+        "An error occurred during login. Please try again.";
+
+      setError(message);
+    }
   }
 
   return (
@@ -42,6 +53,13 @@ function Login() {
         >
           Login to your account
         </h1>
+
+        {/* 3. Display error message if present */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm text-center">
+            {error}
+          </div>
+        )}
 
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <input
